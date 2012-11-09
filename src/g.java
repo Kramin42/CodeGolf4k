@@ -13,14 +13,16 @@
  */
 
 import java.applet.Applet;
-import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Event;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Rectangle2D;
@@ -34,13 +36,18 @@ public class g extends Applet implements Runnable {
 		new Thread(this).start();
 	}
 
-	//int mx = 0, my = 0;
+	int mx = 0, my = 0;
 	
 	int numOfCells = 20;
 	int cellWidth = 20;
 	
 	int prgBoxSize = 30;
 	int prgBoxSpacing = 50;
+	int prgBoxSideClickWidth = 10;
+	
+	int playBtnSpacing = 20;
+	int playBtnSize = 40;
+	int playMode = 0;//0: paused, 1: single step, 2: play, 3: fast forward
 	
 	int level[] = new int[numOfCells*numOfCells];
 	int startCell;
@@ -50,14 +57,16 @@ public class g extends Applet implements Runnable {
 	int dir[]={0,-1};
 	
 	int ballSpeed = 1;//5 for fastforward, 1 for normal
+	int fastFwrdMult = 5;
 	boolean moving = false;
 	
 	boolean step = false;
-	boolean play = false;
-	boolean fastfwrd = false;
+//	boolean play = false;
+//	boolean fastfwrd = false;
 	
 	boolean reachedEnd = false;
 	boolean outOfBounds = false;
+	boolean reset = false;
 	boolean createNewGame;
 	
 	// 0: nop, 1: return, 2: forward, 3: left, 4: right
@@ -66,11 +75,11 @@ public class g extends Applet implements Runnable {
 	int prgrmclrs[]= {0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0};
 	// index of the block to connect to, "-" sign if connected to bottom, "+" if connected to top, 0 if disconnected
 	// requires an offset of 1 to be added or subtracted, depending on sign, to get index of block
-	int toploops[] = {0,0,14,0,0,0,0,0,0,0,0,0,0,1,0,0};
-	int botloops[] = {0,0,16,0,0,0,0,0,0,0,0,0,0,1,0,0};
-	int tplpclrs[] = {0,0,3,0,0,0,0,0,0,0,0,0,0,1,0,0};
-	int btlpclrs[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0};
-	int bezierOffset = 25;
+	int toploops[] = {0,0,14,0,0,0,0,-10,0,0,0,0,0,-16,0,0};
+	int botloops[] = {0,0,16,0,0,0,0,0,0,0,0,0,0,-1,0,0};
+	int tplpclrs[] = {0,0,3,0,0,0,0,2,0,0,0,0,0,1,0,0};
+	int btlpclrs[] = {0,0,2,0,0,0,0,0,0,0,0,0,0,2,0,0};
+	int bezierOffset = 40;
 	int progPos;
 	boolean execute;
 
@@ -86,12 +95,22 @@ public class g extends Applet implements Runnable {
 		AffineTransform identity = new AffineTransform();
 		AffineTransform tempTrans = new AffineTransform();
 		
+		BasicStroke thinStroke = new BasicStroke(1);
+		BasicStroke medStroke = new BasicStroke(2);
+		
 		int xpoints[] = {-5,0,5};
 		int ypoints[] = {0,-10,0};
 		Polygon triangle = new Polygon(xpoints, ypoints, 3);
 		
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		
+		BufferedImage cursor = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = (Graphics2D) cursor.getGraphics();
+		g.setColor(Color.cyan);
+		g.drawLine(0, 6, 12, 6);
+		g.drawLine(6, 0, 6, 12);
+		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursor , new Point(6,6), ""));
 		
 		Random rand = new Random();
 
@@ -101,6 +120,7 @@ public class g extends Applet implements Runnable {
 		
 		// other vars
 		int temp;
+		int x,y;
 		
 		FontMetrics fm;
 		Rectangle2D rect;
@@ -131,6 +151,9 @@ public class g extends Applet implements Runnable {
 		int tick = 0, fps = 0, acc = 0;
 		long lastTime = System.nanoTime();
 		
+		int frameNum = 0;
+		int stepDelay = 0;
+		
 		//build level p=path h=hidden
 		// 0: blank, 1: pred, 2: pgreen, 3: pblue, 4: hpred, 5: hpgreen, 6: hpblue
 		//level[9*numOfCells+9]=2;
@@ -149,7 +172,22 @@ public class g extends Applet implements Runnable {
 
 		// Game loop.
 		while (true) {
-			
+			frameNum++;
+			//if paused reset frameNum
+			switch (playMode) {
+			case 0:
+				frameNum = 0;
+				break;
+			case 1:
+				stepDelay = 4;
+				break;
+			case 2:
+				stepDelay = 30;
+				break;
+			case 3:
+				stepDelay = 2;
+				break;
+			}
 			
 			long now = System.nanoTime();
 			acc += now - lastTime;
@@ -163,7 +201,10 @@ public class g extends Applet implements Runnable {
 			//game update
 			//
 			
-			if (createNewGame || reachedEnd || outOfBounds){ //reset game
+			if (createNewGame || reset){ //reset game
+				vel[0]=0;
+				vel[1]=0;
+				moving=false;
 				pos[0] = (startCell%numOfCells)*cellWidth + cellWidth/2;
 				pos[1] = (startCell/numOfCells)*cellWidth + cellWidth/2;
 				dir[0] = startDir[0]; dir[1] = startDir[1];
@@ -171,8 +212,10 @@ public class g extends Applet implements Runnable {
 				progPos = 0;
 				reachedEnd = false;
 				outOfBounds = false;
+				reset = false;
 				createNewGame=false;
 				execute=false;
+				playMode=0;
 			}
 			
 			//update the ball
@@ -180,6 +223,10 @@ public class g extends Applet implements Runnable {
 				moving=true;
 				vel[0] = ballSpeed*dir[0];
 				vel[1] = ballSpeed*dir[1];
+				if (playMode==3){//0: paused, 1: single step, 2: play, 3: fast forward
+					vel[0] = ballSpeed*fastFwrdMult*dir[0];
+					vel[1] = ballSpeed*fastFwrdMult*dir[1];
+				}
 				dest[0] = pos[0]+dir[0]*cellWidth;
 				dest[1] = pos[1]+dir[1]*cellWidth;
 				currentCell+=dir[0]+numOfCells*dir[1];
@@ -200,6 +247,7 @@ public class g extends Applet implements Runnable {
 					//check if it has reached the end
 					reachedEnd = currentCell==endCell;
 					outOfBounds = (level[currentCell]==0 || level[currentCell]>3);
+					reset = reachedEnd || outOfBounds;
 //					if (currentCell==endCell){
 //						reachedEnd=true;
 //					} else if (level[currentCell]==0 || level[currentCell]>3){
@@ -209,9 +257,10 @@ public class g extends Applet implements Runnable {
 			}
 			
 			// go to next instruction
-			if (execute && !moving /*&& tick%5==0*/) {
+			if (playMode>0 && !moving && frameNum%stepDelay==0) {
 				//System.out.println("running: " + program[progPos] + " at " + progPos);
 				// 0: blank, 1: red, 2: green, 3: blue
+				//System.out.println("program position: "+progPos);
 				if (prgrmclrs[progPos] == 0 || prgrmclrs[progPos] == level[currentCell]) {
 					// 0: nop, 1: return, 2: forward, 3: left, 4: right
 					temp = dir[0];
@@ -230,23 +279,24 @@ public class g extends Applet implements Runnable {
 				// requires an offset of 1 to be added or subtracted, depending on sign, to get index of block
 				//TODO: add to stack when branching
 				temp=0;
-				if (toploops[progPos]!=0 || botloops[progPos]!=0){
-					if (tplpclrs[progPos]==0){
+				//if (toploops[progPos]!=0 || botloops[progPos]!=0){
+					if (tplpclrs[progPos]==0 && toploops[progPos]!=0){
 						progPos = Math.abs(toploops[progPos])-1;
 						temp=1;
-					} else if (btlpclrs[progPos]==0){
+					} else if (btlpclrs[progPos]==0 && botloops[progPos]!=0){
 						progPos = Math.abs(botloops[progPos])-1;
 						temp=1;
-					} else if (tplpclrs[progPos] == level[currentCell]){
+					} else if (tplpclrs[progPos] == level[currentCell] && toploops[progPos]!=0){
 						progPos = Math.abs(toploops[progPos])-1;
 						temp=1;
-					} else if (btlpclrs[progPos] == level[currentCell]){
+					} else if (btlpclrs[progPos] == level[currentCell] && botloops[progPos]!=0){
 						progPos = Math.abs(botloops[progPos])-1;
 						temp=1;
 					} 
-				}
+					if (temp!=0) System.out.println("program jumped to: "+progPos);
+				//}
 				if (temp==0 && ++progPos >= 16) progPos = 0;//increment and loop back to 0
-				execute = play || fastfwrd;
+				playMode = playMode==1 ? 0 : playMode;//0: paused, 1: single step, 2: play, 3: fast forward
 			}
 			
 
@@ -294,7 +344,9 @@ public class g extends Applet implements Runnable {
 			
 			//draw the program
 			for (int i=0; i<16; i++){
-				g2d.translate(((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth, ((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize);
+				x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
+				y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+				g2d.translate(x, y);
 				if (prgrmclrs[i]>0){// 0: blank, 1: red, 2: green, 3: blue
 					g2d.setColor(clrLevel[prgrmclrs[i]]);
 					g2d.fillRect(0, 0, prgBoxSize, prgBoxSize);
@@ -302,6 +354,11 @@ public class g extends Applet implements Runnable {
 				if (progPos == i) g2d.setColor(clrSel);
 				else g2d.setColor(clrLines);
 				g2d.drawRect(0, 0, prgBoxSize, prgBoxSize);
+				//if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y+prgBoxSize+prgBoxSideClickWidth) g2d.drawRect(0, -prgBoxSideClickWidth, prgBoxSize, prgBoxSize+2*prgBoxSideClickWidth);
+				if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y)
+					g2d.drawRect(0, -prgBoxSideClickWidth, prgBoxSize, prgBoxSideClickWidth);
+				if (mx>x && mx<x+prgBoxSize && my>y+prgBoxSize && my<y+prgBoxSize+prgBoxSideClickWidth)
+					g2d.drawRect(0, prgBoxSize, prgBoxSize, prgBoxSideClickWidth);
 				tempTrans = g2d.getTransform();
 				g2d.translate(prgBoxSize/2, prgBoxSize/2);
 				// 0: nop, 1: return, 2: forward, 3: left, 4: right
@@ -313,12 +370,18 @@ public class g extends Applet implements Runnable {
 				if (program[i]>1){
 					g2d.fill(triangle);
 				}
-				g2d.setTransform(tempTrans);
-				// draw beziers
-				g2d.translate(prgBoxSize/2, 0);
+				
+				g2d.setTransform(identity);
+			}
+			
+			//draw beziers
+			for (int i=0; i<16; i++){
+				g2d.translate(((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2, ((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize);
 				int ti;
 				int tx;
 				int ty;
+				int side=1;
+				g2d.setStroke(medStroke);
 				if (toploops[i]!=0){
 					g2d.setColor(clrLevel[tplpclrs[i]]);
 					g2d.scale(1, 0.5);
@@ -327,10 +390,15 @@ public class g extends Applet implements Runnable {
 					ti=(Math.abs(toploops[i])-1);
 					tx=(ti%4-i%4)*(prgBoxSpacing+prgBoxSize);
 					ty=(ti/4-i/4)*(prgBoxSpacing+prgBoxSize);
+					if (toploops[i]<0){
+						side=-1;
+						ty+=prgBoxSize+2;
+					}
 					temp = bezierOffset*(1+Math.abs(ti/4-i/4));
-					g2d.draw(new CubicCurve2D.Double(0, -1, 0, -temp, tx, ty-temp, tx, ty-1));
+					g2d.draw(new CubicCurve2D.Double(0, -2, 0, -temp, tx, ty-side*temp, tx, ty-1));
 				}
 				g2d.translate(0, prgBoxSize+1);
+				side=-1;
 				if (botloops[i]!=0){
 					g2d.setColor(clrLevel[btlpclrs[i]]);
 					g2d.scale(1, -0.5);
@@ -339,10 +407,56 @@ public class g extends Applet implements Runnable {
 					ti=(Math.abs(botloops[i])-1);
 					tx=(ti%4-i%4)*(prgBoxSpacing+prgBoxSize);
 					ty=(ti/4-i/4)*(prgBoxSpacing+prgBoxSize);
+					if (botloops[i]>0){
+						side=1;
+						ty-=prgBoxSize+2;
+					}
 					temp = bezierOffset*(1+Math.abs(ti/4-i/4));
-					g2d.draw(new CubicCurve2D.Double(0, 0, 0, temp, tx, ty+temp, tx, ty));
+					g2d.draw(new CubicCurve2D.Double(0, 1, 0, temp, tx, ty-side*temp, tx, ty));
 				}
-				
+				g2d.setStroke(thinStroke);
+				g2d.setTransform(identity);
+			}
+			
+			//draw the play control buttons
+			for (int i=0; i<5; i++){
+				g2d.setColor(clrLines);
+				if (playMode+1==i) g2d.setColor(clrSel);
+				g2d.translate((i+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
+				g2d.drawRect(0, 0, playBtnSize, playBtnSize);
+				g2d.translate(playBtnSize/2, playBtnSize/2);
+				g2d.setStroke(medStroke);
+				switch (i){
+				case 0://back to start
+					g2d.drawLine(-10, -5, -10, 4);
+					g2d.rotate(-1.570796327);
+					g2d.fill(triangle);
+					g2d.translate(0, 9);
+					g2d.fill(triangle);
+					break;
+				case 1://pause
+					g2d.drawLine(-5, -5, -5, 4);
+					g2d.drawLine(5, -5, 5, 4);
+					break;
+				case 2://single step
+					g2d.translate(-5, 0);
+					g2d.drawLine(10, -5, 10, 4);
+					g2d.rotate(1.570796327);
+					g2d.fill(triangle);
+					break;
+				case 3://play
+					g2d.translate(-5, 0);
+					g2d.rotate(1.570796327);
+					g2d.fill(triangle);
+					break;
+				case 4://fast forward
+					g2d.rotate(1.570796327);
+					g2d.fill(triangle);
+					g2d.translate(0, 9);
+					g2d.fill(triangle);
+					break;
+				}
+				g2d.setStroke(thinStroke);
 				g2d.setTransform(identity);
 			}
 			
@@ -361,37 +475,53 @@ public class g extends Applet implements Runnable {
 	public boolean handleEvent(Event e) {
 		if (e.id == Event.KEY_ACTION){
 			switch (e.key){
-			case Event.UP:
-				if (!moving) step = true;
-				break;
-			case Event.LEFT:
-				if (!moving){
-					int temp=dir[0];
-					dir[0]=dir[1];
-					dir[1]=-temp;
-				}
-				break;
-			case Event.RIGHT:
-				if (!moving){
-					int temp=dir[0];
-					dir[0]=-dir[1];
-					dir[1]=temp;
-				}
-				break;
+//			case Event.UP:
+//				if (!moving) step = true;
+//				break;
+//			case Event.LEFT:
+//				if (!moving){
+//					int temp=dir[0];
+//					dir[0]=dir[1];
+//					dir[1]=-temp;
+//				}
+//				break;
+//			case Event.RIGHT:
+//				if (!moving){
+//					int temp=dir[0];
+//					dir[0]=-dir[1];
+//					dir[1]=temp;
+//				}
+//				break;
 			}
 		}
 		if (e.id == Event.KEY_RELEASE){
 			switch (e.key){
-			case ' ':
-				execute = !execute;
-				break;
+//			case ' ':
+//				playMode=1;
+//				break;
 			}
 		}
 		if (e.id == Event.MOUSE_DOWN){
-			
+			//System.out.println("mouse click at x="+e.x+", y="+e.y);
+			for (int i=0; i<5; i++){
+				//g2d.translate((i+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
+				//g2d.drawRect(0, 0, playBtnSize, playBtnSize);
+				int x = (i+1)*(playBtnSpacing+playBtnSize);
+				int y = numOfCells*cellWidth+playBtnSpacing;
+				//System.out.println("checking for button at x="+x+", y="+y);
+				if (e.x>x && e.x<x+playBtnSize && e.y>y && e.y<y+playBtnSize){
+					//System.out.println("playmode set to "+(i-1));
+					playMode = i-1;
+				}
+				if (playMode==-1){reset = true; playMode=0;}
+			}
 		}
 		if (e.id == Event.MOUSE_UP){
 			
+		}
+		if (e.id == Event.MOUSE_MOVE || e.id == Event.MOUSE_DRAG){
+			mx = e.x;
+			my = e.y;
 		}
 		return false;
 	}
