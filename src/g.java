@@ -14,7 +14,7 @@
 
 import java.applet.Applet;
 import java.awt.BasicStroke;
-import java.awt.Event;
+//import java.awt.Event;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -23,12 +23,14 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Random;
+import java.util.Stack;
 
 public class g extends Applet implements Runnable {
 
@@ -36,7 +38,11 @@ public class g extends Applet implements Runnable {
 		new Thread(this).start();
 	}
 
-	int mx = 0, my = 0;
+	int mx, my;
+	int mDownBox;//positive for toploop, negative for bottom (offset by + or - 1)
+	boolean dragging =false;
+	
+	int x,y,temp;
 	
 	int numOfCells = 20;
 	int cellWidth = 20;
@@ -48,6 +54,9 @@ public class g extends Applet implements Runnable {
 	int playBtnSpacing = 20;
 	int playBtnSize = 40;
 	int playMode = 0;//0: paused, 1: single step, 2: play, 3: fast forward
+	
+	int selClr = 0;
+	int selOp = 0;
 	
 	int level[] = new int[numOfCells*numOfCells];
 	int startCell;
@@ -70,15 +79,15 @@ public class g extends Applet implements Runnable {
 	boolean createNewGame;
 	
 	// 0: nop, 1: return, 2: forward, 3: left, 4: right
-	int program[]  = {2,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0};
+	int program[]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	// 0: blank, 1: red, 2: green, 3: blue
-	int prgrmclrs[]= {0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0};
+	int prgrmclrs[]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	// index of the block to connect to, "-" sign if connected to bottom, "+" if connected to top, 0 if disconnected
 	// requires an offset of 1 to be added or subtracted, depending on sign, to get index of block
-	int toploops[] = {0,0,14,0,0,0,0,-10,0,0,0,0,0,-16,0,0};
-	int botloops[] = {0,0,16,0,0,0,0,0,0,0,0,0,0,-1,0,0};
-	int tplpclrs[] = {0,0,3,0,0,0,0,2,0,0,0,0,0,1,0,0};
-	int btlpclrs[] = {0,0,2,0,0,0,0,0,0,0,0,0,0,2,0,0};
+	int toploops[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int botloops[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int tplpclrs[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int btlpclrs[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	int bezierOffset = 40;
 	int progPos;
 	boolean execute;
@@ -112,6 +121,8 @@ public class g extends Applet implements Runnable {
 		g.drawLine(6, 0, 6, 12);
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursor , new Point(6,6), ""));
 		
+		enableEvents(MouseEvent.MOUSE_EVENT_MASK | MouseEvent.MOUSE_MOTION_EVENT_MASK | KeyEvent.KEY_EVENT_MASK);
+		
 		Random rand = new Random();
 
 		//ball vars
@@ -119,8 +130,6 @@ public class g extends Applet implements Runnable {
 		int currentCell = 0;
 		
 		// other vars
-		int temp;
-		int x,y;
 		
 		FontMetrics fm;
 		Rectangle2D rect;
@@ -172,23 +181,6 @@ public class g extends Applet implements Runnable {
 
 		// Game loop.
 		while (true) {
-			frameNum++;
-			//if paused reset frameNum
-			switch (playMode) {
-			case 0:
-				frameNum = 0;
-				break;
-			case 1:
-				stepDelay = 4;
-				break;
-			case 2:
-				stepDelay = 30;
-				break;
-			case 3:
-				stepDelay = 2;
-				break;
-			}
-			
 			long now = System.nanoTime();
 			acc += now - lastTime;
 			tick++;
@@ -205,6 +197,7 @@ public class g extends Applet implements Runnable {
 				vel[0]=0;
 				vel[1]=0;
 				moving=false;
+				step=false;
 				pos[0] = (startCell%numOfCells)*cellWidth + cellWidth/2;
 				pos[1] = (startCell/numOfCells)*cellWidth + cellWidth/2;
 				dir[0] = startDir[0]; dir[1] = startDir[1];
@@ -216,6 +209,23 @@ public class g extends Applet implements Runnable {
 				createNewGame=false;
 				execute=false;
 				playMode=0;
+			}
+			
+			frameNum++;
+			//if paused reset frameNum
+			switch (playMode) {
+			case 0:
+				frameNum = 0;
+				break;
+			case 1:
+				stepDelay = 4;
+				break;
+			case 2:
+				stepDelay = 30;
+				break;
+			case 3:
+				stepDelay = 2;
+				break;
 			}
 			
 			//update the ball
@@ -240,6 +250,7 @@ public class g extends Applet implements Runnable {
 					moving=false;
 					vel[0]=0;
 					vel[1]=0;
+					frameNum=0;
 					//pos[0]=dest[0];
 					//pos[1]=dest[1];
 
@@ -460,6 +471,38 @@ public class g extends Applet implements Runnable {
 				g2d.setTransform(identity);
 			}
 			
+			//draw the colour palette
+			g2d.translate(prgBoxSpacing+numOfCells*cellWidth, numOfCells*cellWidth+playBtnSpacing);
+			for (int i=0;i<4;i++){
+				g2d.setColor(clrLevel[i]);
+				g2d.fillRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
+				g2d.setColor(clrLines);
+				g2d.drawRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
+			}
+			g2d.setColor(clrSel);
+			g2d.drawRect((selClr%2)*cellWidth, (selClr/2)*cellWidth, cellWidth, cellWidth);
+			g2d.setTransform(identity);
+			
+			//draw the operation selection buttons
+			for (int i=0;i<5;i++){// 0: nop, 1: return, 2: forward, 3: left, 4: right
+				x=2*prgBoxSpacing+i*(prgBoxSpacing-prgBoxSize)/2+(i+1)*prgBoxSize+numOfCells*cellWidth;
+				y=numOfCells*cellWidth+playBtnSpacing + (cellWidth*2 - prgBoxSize)/2;
+				g2d.translate(x, y);
+				g2d.setColor(clrLines);
+				if (i==selOp) g2d.setColor(clrSel);
+				g2d.drawRect(0, 0, prgBoxSize, prgBoxSize);
+				g2d.translate(prgBoxSize/2, prgBoxSize/2);
+				if (i==3){
+					g2d.rotate(-1.570796327);// -pi/2
+				} else if (i==4){
+					g2d.rotate(1.570796327); //  pi/2
+				}
+				if (i>1){
+					g2d.fill(triangle);
+				}
+				g2d.setTransform(identity);
+			}
+			
 			appletGraphics.drawImage(screen, 0, 0, null);
 
 			do {
@@ -471,58 +514,140 @@ public class g extends Applet implements Runnable {
 			}
 		}
 	}
-
-	public boolean handleEvent(Event e) {
-		if (e.id == Event.KEY_ACTION){
-			switch (e.key){
-//			case Event.UP:
-//				if (!moving) step = true;
-//				break;
-//			case Event.LEFT:
-//				if (!moving){
-//					int temp=dir[0];
-//					dir[0]=dir[1];
-//					dir[1]=-temp;
-//				}
-//				break;
-//			case Event.RIGHT:
-//				if (!moving){
-//					int temp=dir[0];
-//					dir[0]=-dir[1];
-//					dir[1]=temp;
-//				}
-//				break;
-			}
+	
+	public void processKeyEvent(KeyEvent e) {
+		switch (e.getKeyCode()){
+//		case Event.UP:
+//			if (!moving) step = true;
+//			break;
+//		case Event.LEFT:
+//			if (!moving){
+//				int temp=dir[0];
+//				dir[0]=dir[1];
+//				dir[1]=-temp;
+//			}
+//			break;
+//		case Event.RIGHT:
+//			if (!moving){
+//				int temp=dir[0];
+//				dir[0]=-dir[1];
+//				dir[1]=temp;
+//			}
+//			break;
 		}
-		if (e.id == Event.KEY_RELEASE){
-			switch (e.key){
-//			case ' ':
-//				playMode=1;
-//				break;
-			}
-		}
-		if (e.id == Event.MOUSE_DOWN){
+	}
+	
+	public void processMouseEvent(MouseEvent e) {
+		if (e.getID() == MouseEvent.MOUSE_PRESSED){
+			mx = e.getX();
+			my = e.getY();
 			//System.out.println("mouse click at x="+e.x+", y="+e.y);
 			for (int i=0; i<5; i++){
 				//g2d.translate((i+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
 				//g2d.drawRect(0, 0, playBtnSize, playBtnSize);
-				int x = (i+1)*(playBtnSpacing+playBtnSize);
-				int y = numOfCells*cellWidth+playBtnSpacing;
+				x = (i+1)*(playBtnSpacing+playBtnSize);
+				y = numOfCells*cellWidth+playBtnSpacing;
 				//System.out.println("checking for button at x="+x+", y="+y);
-				if (e.x>x && e.x<x+playBtnSize && e.y>y && e.y<y+playBtnSize){
+				if (mx>x && mx<x+playBtnSize && my>y && my<y+playBtnSize){
 					//System.out.println("playmode set to "+(i-1));
 					playMode = i-1;
 				}
 				if (playMode==-1){reset = true; playMode=0;}
 			}
-		}
-		if (e.id == Event.MOUSE_UP){
 			
+			//g2d.translate(prgBoxSpacing+numOfCells*cellWidth, numOfCells*cellWidth+playBtnSpacing);
+			for (int i=0;i<4;i++){
+				x = prgBoxSpacing+numOfCells*cellWidth + (i%2)*cellWidth;
+				y = numOfCells*cellWidth+playBtnSpacing + (i/2)*cellWidth;
+				if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth ){
+					selClr=i;
+				}
+//				g2d.setColor(clrLevel[i]);
+//				g2d.fillRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
+//				g2d.setColor(clrLines);
+//				g2d.drawRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
+			}
+			
+			//check the operation selection buttons
+			for (int i=0;i<5;i++){// 0: nop, 1: return, 2: forward, 3: left, 4: right
+				x=2*prgBoxSpacing+i*(prgBoxSpacing-prgBoxSize)/2+(i+1)*prgBoxSize+numOfCells*cellWidth;
+				y=numOfCells*cellWidth+playBtnSpacing + (cellWidth*2 - prgBoxSize)/2;
+				if (mx>x && mx<x+prgBoxSize && my>y && my<y+prgBoxSize){
+					selOp=i;
+				}
+			}
+			
+			//check for clicks in the program boxes
+			for (int i=0; i<16; i++){
+				x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
+				y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+				if (mx>x && mx<x+prgBoxSize && my>y && my<y+prgBoxSize){
+					if (e.getButton() == MouseEvent.BUTTON1){
+						if (selOp!=0) program[i]=selOp;
+						prgrmclrs[i]=selClr;
+					} else {
+						program[i]=0;
+						prgrmclrs[i]=0;
+					}
+				}
+			}
+			
+			for (int i=0; i<16; i++){
+				x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
+				y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+				if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y){
+					if (e.getButton() == MouseEvent.BUTTON1){
+						mDownBox=i+1;
+						dragging=true;
+					} else {
+						toploops[i]=0;
+					}
+				}
+				if (mx>x && mx<x+prgBoxSize && my>y+prgBoxSize && my<y+prgBoxSize+prgBoxSideClickWidth){
+					if (e.getButton() == MouseEvent.BUTTON1){
+						mDownBox=-i-1;
+						dragging=true;
+					} else {
+						botloops[i]=0;
+					}
+				}
+			}
 		}
-		if (e.id == Event.MOUSE_MOVE || e.id == Event.MOUSE_DRAG){
-			mx = e.x;
-			my = e.y;
+		if (e.getID() == MouseEvent.MOUSE_RELEASED){
+			mx = e.getX();
+			my = e.getY();
+			if (e.getButton() == MouseEvent.BUTTON1 && dragging){
+				for (int i=0; i<16; i++){
+					x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
+					y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+					int sign = 0;
+					if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y){
+						sign=1;
+					}
+					if (mx>x && mx<x+prgBoxSize && my>y+prgBoxSize && my<y+prgBoxSize+prgBoxSideClickWidth){
+						sign=-1;
+					}
+					if (sign!=0){
+						temp=Math.abs(mDownBox)-1;//the index of the box
+						if (mDownBox>0){
+							tplpclrs[temp]=selClr;
+							if (sign*(i+1)==mDownBox) continue;//don't create connections to the same side of the same program box
+							toploops[temp]=sign*(i+1);
+						}
+						if (mDownBox<0){
+							btlpclrs[temp]=selClr;
+							if (sign*(i+1)==mDownBox) continue;//don't create connections to the same side of the same program box
+							botloops[temp]=sign*(i+1);
+						}
+					}
+				}
+				dragging =false;
+			}
 		}
-		return false;
+	}
+	
+	public void processMouseMotionEvent(MouseEvent e) {
+		mx = e.getX();
+		my = e.getY();
 	}
 }
