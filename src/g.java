@@ -82,6 +82,8 @@ public class g extends Applet implements Runnable {
 	int program[]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	// 0: blank, 1: red, 2: green, 3: blue
 	int prgrmclrs[]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	Stack<Integer> progStack = new Stack<Integer>();
+	
 	// index of the block to connect to, "-" sign if connected to bottom, "+" if connected to top, 0 if disconnected
 	// requires an offset of 1 to be added or subtracted, depending on sign, to get index of block
 	int toploops[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -169,12 +171,12 @@ public class g extends Applet implements Runnable {
 		
 		for(int i = 1; i<numOfCells-1; i++){
 			for (int j = 1; j<numOfCells-1; j++){
-				if (i==9 && j==9) continue;
+				if (i==0 && j==0) continue;
 				level[j*numOfCells+i]=1+((i+j)%3);
 			}
 		}
 		startCell = 14*numOfCells+10;
-		endCell   = 9*numOfCells+9;
+		endCell   = 0*numOfCells+0;
 		startDir[0]=0; startDir[1]=-1; //0: up, 1: right, 2: down, 3: left
 		
 		createNewGame = true;
@@ -203,6 +205,7 @@ public class g extends Applet implements Runnable {
 				dir[0] = startDir[0]; dir[1] = startDir[1];
 				currentCell = startCell;
 				progPos = 0;
+				progStack.clear();
 				reachedEnd = false;
 				outOfBounds = false;
 				reset = false;
@@ -277,36 +280,50 @@ public class g extends Applet implements Runnable {
 					temp = dir[0];
 					if (program[progPos] == 2)
 						step = true;
-					else if (program[progPos] == 3) {
+					if (program[progPos] == 3) {
 						dir[0] = dir[1];
 						dir[1] = -temp;
-					} else if (program[progPos] == 4) {
+					}
+					if (program[progPos] == 4) {
 						dir[0] = -dir[1];
 						dir[1] = temp;
+					}
+					if (program[progPos] == 1){
+						if (progStack.empty()){
+							reset=true;
+						} else {
+							progPos=progStack.pop()+1;
+							if (progPos>=16) progPos=0;
+							System.out.println("returned to "+progPos);
+						}
+						temp=-2;
 					}
 				}
 				
 				// toploops gives the index of the block to connect to, "-" sign if connected to bottom, "+" if connected to top, 0 if disconnected
 				// requires an offset of 1 to be added or subtracted, depending on sign, to get index of block
-				//TODO: add to stack when branching
-				temp=0;
-				//if (toploops[progPos]!=0 || botloops[progPos]!=0){
-					if (tplpclrs[progPos]==0 && toploops[progPos]!=0){
+				if (temp!=-2){//did not just return
+					temp=-1;
+					//check for coloured branches first
+					if (tplpclrs[progPos] == level[currentCell] && toploops[progPos]!=0){
+						temp=progPos;
 						progPos = Math.abs(toploops[progPos])-1;
-						temp=1;
-					} else if (btlpclrs[progPos]==0 && botloops[progPos]!=0){
-						progPos = Math.abs(botloops[progPos])-1;
-						temp=1;
-					} else if (tplpclrs[progPos] == level[currentCell] && toploops[progPos]!=0){
-						progPos = Math.abs(toploops[progPos])-1;
-						temp=1;
 					} else if (btlpclrs[progPos] == level[currentCell] && botloops[progPos]!=0){
+						temp=progPos;
 						progPos = Math.abs(botloops[progPos])-1;
-						temp=1;
-					} 
-					if (temp!=0) System.out.println("program jumped to: "+progPos);
-				//}
-				if (temp==0 && ++progPos >= 16) progPos = 0;//increment and loop back to 0
+					} else if (tplpclrs[progPos]==0 && toploops[progPos]!=0){
+						temp=progPos;
+						progPos = Math.abs(toploops[progPos])-1;
+					} else if (btlpclrs[progPos]==0 && botloops[progPos]!=0){
+						temp=progPos;
+						progPos = Math.abs(botloops[progPos])-1;
+					}
+					if (temp!=-1) {
+						progStack.push(temp);
+						System.out.println("branched to: "+progPos+", added "+progStack.peek()+" to stack.");
+					}
+					if (temp==-1 && ++progPos >= 16) progPos = 0;//increment and loop back to 0
+				}
 				playMode = playMode==1 ? 0 : playMode;//0: paused, 1: single step, 2: play, 3: fast forward
 			}
 			
@@ -380,6 +397,9 @@ public class g extends Applet implements Runnable {
 				}
 				if (program[i]>1){
 					g2d.fill(triangle);
+				}
+				if (program[i]==1){
+					g2d.drawString("R", -4, 4);
 				}
 				
 				g2d.setTransform(identity);
@@ -499,6 +519,9 @@ public class g extends Applet implements Runnable {
 				}
 				if (i>1){
 					g2d.fill(triangle);
+				}
+				if (i==1){
+					g2d.drawString("R", -4, 4);
 				}
 				g2d.setTransform(identity);
 			}
