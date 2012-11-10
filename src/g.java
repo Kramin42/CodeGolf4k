@@ -41,6 +41,7 @@ public class g extends Applet implements Runnable {
 	int mx, my;
 	int mDownBox;//positive for toploop, negative for bottom (offset by + or - 1)
 	boolean dragging =false;
+	boolean mousedown = false;
 	
 	int x,y,temp;
 	
@@ -57,11 +58,14 @@ public class g extends Applet implements Runnable {
 	int playBtnSize = 40;
 	int playMode = 0;//0: paused, 1: single step, 2: play, 3: fast forward
 	
+	boolean editMode = true;
+	
 	int selClr = 0;
 	int selOp = 0;
 	
 	//int level[] = new int[numOfCells*numOfCells];
-	int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,3,1,0,0,0,0,3,3,3,1,0,1,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,1,3,3,2,0,1,3,3,1,0,0,2,3,3,3,3,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,0,2,3,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};	
+	//int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,3,1,0,0,0,0,3,3,3,1,0,1,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,1,3,3,2,0,1,3,3,1,0,0,2,3,3,3,3,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,1,2,3,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
+	int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,3,3,2,1,0,0,3,0,0,0,0,0,0,0,0,3,0,1,0,0,1,3,2,3,3,3,2,3,3,3,1,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,1,3,2,3,2,3,3,1,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,1,0,1,3,3,3,2,1,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,1,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
 	
 	int startCell;
 	int endCell;
@@ -181,11 +185,13 @@ public class g extends Applet implements Runnable {
 //		}
 //		startCell = 14*numOfCells+10;
 //		endCell   = 0*numOfCells+0;
-		startCell = 348;
-		endCell = 189;
+		startCell = 63;
+		endCell = 127;
 		startDir[0]=0; startDir[1]=-1; //0: up, 1: right, 2: down, 3: left
 		
 		createNewGame = true;
+		
+		
 
 		// Game loop.
 		while (true) {
@@ -455,6 +461,21 @@ public class g extends Applet implements Runnable {
 				g2d.setTransform(identity);
 			}
 			
+			//draw bezier to mouse when dragging
+			if (dragging){
+				g2d.setStroke(medStroke);
+				g2d.setColor(clrLevel[selClr]);
+				int i = Math.abs(mDownBox)-1;
+				int side = 1;
+				if (mDownBox<0) side = -1;
+				x = ((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2;
+				y = ((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize + (1-side)*prgBoxSize/2;
+				//temp = bezierOffset*(1+2*Math.abs(my-y)/(prgBoxSize+prgBoxSpacing));
+				g2d.draw(new CubicCurve2D.Double(x, y, x, y-side*bezierOffset*2, mx, my, mx, my));
+				g2d.setTransform(identity);
+				g2d.setStroke(thinStroke);
+			}
+			
 			//draw the play control buttons
 			for (int i=0; i<5; i++){
 				g2d.setColor(clrLines);
@@ -546,6 +567,16 @@ public class g extends Applet implements Runnable {
 	
 	public void processKeyEvent(KeyEvent e) {
 		switch (e.getKeyCode()){
+		case KeyEvent.VK_S:
+			String s = "{";
+			for (int i=0; i<numOfCells*numOfCells;i++){
+				s=s+level[i]+",";
+			}
+			s=s+"}";
+			System.out.println(s);
+			System.out.println("start: "+startCell);
+			System.out.println("end: "+endCell);
+			break;
 //		case Event.UP:
 //			if (!moving) step = true;
 //			break;
@@ -568,8 +599,28 @@ public class g extends Applet implements Runnable {
 	
 	public void processMouseEvent(MouseEvent e) {
 		if (e.getID() == MouseEvent.MOUSE_PRESSED){
+			if (e.getButton() == MouseEvent.BUTTON1) mousedown=true;
 			mx = e.getX();
 			my = e.getY();
+			// in editmode check for clicks in the grid
+			if (editMode){
+				for (int i=0; i<numOfCells*numOfCells;i++){
+					x = (i%numOfCells)*cellWidth;
+					y = (i/numOfCells)*cellWidth;
+					if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
+						if (e.getButton() == MouseEvent.BUTTON1){
+							level[i] = selClr;
+						}
+						if (e.getButton() == MouseEvent.BUTTON2){//start
+							startCell=i;
+						}
+						if (e.getButton() == MouseEvent.BUTTON3){//end
+							endCell=i;
+						}
+					}
+				}
+			}
+			
 			//System.out.println("mouse click at x="+e.x+", y="+e.y);
 			for (int i=0; i<5; i++){
 				//g2d.translate((i+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
@@ -645,6 +696,7 @@ public class g extends Applet implements Runnable {
 		if (e.getID() == MouseEvent.MOUSE_RELEASED){
 			mx = e.getX();
 			my = e.getY();
+			if (e.getButton() == MouseEvent.BUTTON1) mousedown=false;
 			if (e.getButton() == MouseEvent.BUTTON1 && dragging){
 				for (int i=0; i<numOfPrgBoxes; i++){
 					x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
@@ -678,5 +730,15 @@ public class g extends Applet implements Runnable {
 	public void processMouseMotionEvent(MouseEvent e) {
 		mx = e.getX();
 		my = e.getY();
+		// in editmode check for clicks in the grid
+		if (editMode && mousedown){
+			for (int i=0; i<numOfCells*numOfCells;i++){
+				x = (i%numOfCells)*cellWidth;
+				y = (i/numOfCells)*cellWidth;
+				if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
+					level[i] = selClr;
+				}
+			}
+		}
 	}
 }
