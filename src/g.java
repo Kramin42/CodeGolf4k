@@ -48,8 +48,10 @@ public class g extends Applet implements Runnable {
 	int cellWidth = 20;
 	
 	int prgBoxSize = 30;
-	int prgBoxSpacing = 50;
+	int prgBoxSpacing = 40;
 	int prgBoxSideClickWidth = 10;
+	int numOfPrgBoxes = 25;
+	int prgBoxArrayWidth = 5;
 	
 	int playBtnSpacing = 20;
 	int playBtnSize = 40;
@@ -58,7 +60,9 @@ public class g extends Applet implements Runnable {
 	int selClr = 0;
 	int selOp = 0;
 	
-	int level[] = new int[numOfCells*numOfCells];
+	//int level[] = new int[numOfCells*numOfCells];
+	int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,3,1,0,0,0,0,3,3,3,1,0,1,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,1,3,3,2,0,1,3,3,1,0,0,2,3,3,3,3,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,0,2,3,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};	
+	
 	int startCell;
 	int endCell;
 	int startDir[]={0,-1};
@@ -79,17 +83,17 @@ public class g extends Applet implements Runnable {
 	boolean createNewGame;
 	
 	// 0: nop, 1: return, 2: forward, 3: left, 4: right
-	int program[]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int program[]  = new int[numOfPrgBoxes];
 	// 0: blank, 1: red, 2: green, 3: blue
-	int prgrmclrs[]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int prgrmclrs[]= new int[numOfPrgBoxes];
 	Stack<Integer> progStack = new Stack<Integer>();
 	
 	// index of the block to connect to, "-" sign if connected to bottom, "+" if connected to top, 0 if disconnected
 	// requires an offset of 1 to be added or subtracted, depending on sign, to get index of block
-	int toploops[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	int botloops[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	int tplpclrs[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	int btlpclrs[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	int toploops[] = new int[numOfPrgBoxes];
+	int botloops[] = new int[numOfPrgBoxes];
+	int tplpclrs[] = new int[numOfPrgBoxes];
+	int btlpclrs[] = new int[numOfPrgBoxes];
 	int bezierOffset = 40;
 	int progPos;
 	boolean execute;
@@ -169,14 +173,16 @@ public class g extends Applet implements Runnable {
 		// 0: blank, 1: pred, 2: pgreen, 3: pblue, 4: hpred, 5: hpgreen, 6: hpblue
 		//level[9*numOfCells+9]=2;
 		
-		for(int i = 1; i<numOfCells-1; i++){
-			for (int j = 1; j<numOfCells-1; j++){
-				if (i==0 && j==0) continue;
-				level[j*numOfCells+i]=1+((i+j)%3);
-			}
-		}
-		startCell = 14*numOfCells+10;
-		endCell   = 0*numOfCells+0;
+//		for(int i = 1; i<numOfCells-1; i++){
+//			for (int j = 1; j<numOfCells-1; j++){
+//				if (i==0 && j==0) continue;
+//				level[j*numOfCells+i]=1+((i+j)%3);
+//			}
+//		}
+//		startCell = 14*numOfCells+10;
+//		endCell   = 0*numOfCells+0;
+		startCell = 348;
+		endCell = 189;
 		startDir[0]=0; startDir[1]=-1; //0: up, 1: right, 2: down, 3: left
 		
 		createNewGame = true;
@@ -293,8 +299,8 @@ public class g extends Applet implements Runnable {
 							reset=true;
 						} else {
 							progPos=progStack.pop()+1;
-							if (progPos>=16) progPos=0;
-							System.out.println("returned to "+progPos);
+							if (progPos>=numOfPrgBoxes) progPos=0;
+							//System.out.println("returned to "+progPos);
 						}
 						temp=-2;
 					}
@@ -320,9 +326,9 @@ public class g extends Applet implements Runnable {
 					}
 					if (temp!=-1) {
 						progStack.push(temp);
-						System.out.println("branched to: "+progPos+", added "+progStack.peek()+" to stack.");
+						//System.out.println("branched to: "+progPos+", added "+progStack.peek()+" to stack.");
 					}
-					if (temp==-1 && ++progPos >= 16) progPos = 0;//increment and loop back to 0
+					if (temp==-1 && ++progPos >= numOfPrgBoxes) progPos = 0;//increment and loop back to 0
 				}
 				playMode = playMode==1 ? 0 : playMode;//0: paused, 1: single step, 2: play, 3: fast forward
 			}
@@ -371,9 +377,9 @@ public class g extends Applet implements Runnable {
 			g2d.drawLine((int)(pos[0]-dir[1]*bRad), (int)(pos[1]+dir[0]*bRad), (int)(pos[0]+dir[0]*cellWidth/2), (int)(pos[1]+dir[1]*cellWidth/2));
 			
 			//draw the program
-			for (int i=0; i<16; i++){
-				x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
-				y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+			for (int i=0; i<numOfPrgBoxes; i++){
+				x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+				y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
 				g2d.translate(x, y);
 				if (prgrmclrs[i]>0){// 0: blank, 1: red, 2: green, 3: blue
 					g2d.setColor(clrLevel[prgrmclrs[i]]);
@@ -406,8 +412,8 @@ public class g extends Applet implements Runnable {
 			}
 			
 			//draw beziers
-			for (int i=0; i<16; i++){
-				g2d.translate(((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2, ((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize);
+			for (int i=0; i<numOfPrgBoxes; i++){
+				g2d.translate(((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2, ((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize);
 				int ti;
 				int tx;
 				int ty;
@@ -419,13 +425,13 @@ public class g extends Applet implements Runnable {
 					g2d.fill(triangle);
 					g2d.scale(1, 2);
 					ti=(Math.abs(toploops[i])-1);
-					tx=(ti%4-i%4)*(prgBoxSpacing+prgBoxSize);
-					ty=(ti/4-i/4)*(prgBoxSpacing+prgBoxSize);
+					tx=(ti%prgBoxArrayWidth-i%prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
+					ty=(ti/prgBoxArrayWidth-i/prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
 					if (toploops[i]<0){
 						side=-1;
 						ty+=prgBoxSize+2;
 					}
-					temp = bezierOffset*(1+Math.abs(ti/4-i/4));
+					temp = bezierOffset*(1+Math.abs(ti/prgBoxArrayWidth-i/prgBoxArrayWidth));
 					g2d.draw(new CubicCurve2D.Double(0, -2, 0, -temp, tx, ty-side*temp, tx, ty-1));
 				}
 				g2d.translate(0, prgBoxSize+1);
@@ -436,13 +442,13 @@ public class g extends Applet implements Runnable {
 					g2d.fill(triangle);
 					g2d.scale(1, -2);
 					ti=(Math.abs(botloops[i])-1);
-					tx=(ti%4-i%4)*(prgBoxSpacing+prgBoxSize);
-					ty=(ti/4-i/4)*(prgBoxSpacing+prgBoxSize);
+					tx=(ti%prgBoxArrayWidth-i%prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
+					ty=(ti/prgBoxArrayWidth-i/prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
 					if (botloops[i]>0){
 						side=1;
 						ty-=prgBoxSize+2;
 					}
-					temp = bezierOffset*(1+Math.abs(ti/4-i/4));
+					temp = bezierOffset*(1+Math.abs(ti/prgBoxArrayWidth-i/prgBoxArrayWidth));
 					g2d.draw(new CubicCurve2D.Double(0, 1, 0, temp, tx, ty-side*temp, tx, ty));
 				}
 				g2d.setStroke(thinStroke);
@@ -601,9 +607,9 @@ public class g extends Applet implements Runnable {
 			}
 			
 			//check for clicks in the program boxes
-			for (int i=0; i<16; i++){
-				x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
-				y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+			for (int i=0; i<numOfPrgBoxes; i++){
+				x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+				y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
 				if (mx>x && mx<x+prgBoxSize && my>y && my<y+prgBoxSize){
 					if (e.getButton() == MouseEvent.BUTTON1){
 						if (selOp!=0) program[i]=selOp;
@@ -615,9 +621,9 @@ public class g extends Applet implements Runnable {
 				}
 			}
 			
-			for (int i=0; i<16; i++){
-				x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
-				y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+			for (int i=0; i<numOfPrgBoxes; i++){
+				x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+				y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
 				if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y){
 					if (e.getButton() == MouseEvent.BUTTON1){
 						mDownBox=i+1;
@@ -640,9 +646,9 @@ public class g extends Applet implements Runnable {
 			mx = e.getX();
 			my = e.getY();
 			if (e.getButton() == MouseEvent.BUTTON1 && dragging){
-				for (int i=0; i<16; i++){
-					x=((i%4)+1)*prgBoxSpacing+(i%4)*prgBoxSize+numOfCells*cellWidth;
-					y=((i/4)+1)*prgBoxSpacing+(i/4)*prgBoxSize;
+				for (int i=0; i<numOfPrgBoxes; i++){
+					x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+					y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
 					int sign = 0;
 					if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y){
 						sign=1;
