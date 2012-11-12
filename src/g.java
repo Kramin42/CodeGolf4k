@@ -77,8 +77,8 @@ public class g extends Applet implements Runnable {
 	int numOfLevels = 3;
 	int currentLevel = 0;
 	
-	int startCell;
-	int endCell;
+	//int startCell;
+	//int endCell;
 	int startDir[]={0,-1};
 	double pos[]={0,0}, vel[]={0,0};
 	int dir[]={0,-1};
@@ -217,19 +217,23 @@ public class g extends Applet implements Runnable {
 			//
 			
 			if (createNewGame || reset){ //reset game
-				if (reachedEnd) if (++currentLevel>=numOfLevels) currentLevel=0;
+				if (reachedEnd){
+					//if (++currentLevel>=numOfLevels) currentLevel=0;
+					scores[currentLevel]=0;
+					for (int i=0;i<numOfPrgBoxes;i++){
+						if (programs[currentLevel][i]!=0) scores[currentLevel]++;
+					}
+				}
 				
-				startCell = starts[currentLevel];
-				endCell = ends[currentLevel];
 				startDir[0]=0; startDir[1]=-1; //0: up, 1: right, 2: down, 3: left
 				vel[0]=0;
 				vel[1]=0;
 				moving=false;
 				step=false;
-				pos[0] = (startCell%numOfCells)*cellWidth + cellWidth/2;
-				pos[1] = (startCell/numOfCells)*cellWidth + cellWidth/2;
+				pos[0] = (starts[currentLevel]%numOfCells)*cellWidth + cellWidth/2;
+				pos[1] = (starts[currentLevel]/numOfCells)*cellWidth + cellWidth/2;
 				dir[0] = startDir[0]; dir[1] = startDir[1];
-				currentCell = startCell;
+				currentCell = starts[currentLevel];
 				progPos = 0;
 				progStack.clear();
 				reachedEnd = false;
@@ -285,7 +289,7 @@ public class g extends Applet implements Runnable {
 
 					
 					//check if it has reached the end
-					reachedEnd = currentCell==endCell;
+					reachedEnd = currentCell==ends[currentLevel];
 					outOfBounds = (levels[currentLevel][currentCell]==0 || levels[currentLevel][currentCell]>3);
 					reset = reachedEnd || outOfBounds;
 //					if (currentCell==endCell){
@@ -379,9 +383,9 @@ public class g extends Applet implements Runnable {
 			}
 			//draw the hole
 			g2d.setColor(clrLines);
-			g2d.fillRect((endCell%numOfCells)*cellWidth+1, (endCell/numOfCells)*cellWidth+1, cellWidth-1, cellWidth-1);
+			g2d.fillRect((ends[currentLevel]%numOfCells)*cellWidth+1, (ends[currentLevel]/numOfCells)*cellWidth+1, cellWidth-1, cellWidth-1);
 			g2d.setColor(clrBG);
-			g2d.fillOval((endCell%numOfCells)*cellWidth+(cellWidth/2 - bRad), (endCell/numOfCells)*cellWidth+(cellWidth/2 - bRad), bRad*2+1, bRad*2+1);
+			g2d.fillOval((ends[currentLevel]%numOfCells)*cellWidth+(cellWidth/2 - bRad), (ends[currentLevel]/numOfCells)*cellWidth+(cellWidth/2 - bRad), bRad*2+1, bRad*2+1);
 			//draw the coloured squares
 			for (int i=0; i<numOfCells*numOfCells;i++){
 				if (levels[currentLevel][i]>0){
@@ -609,8 +613,8 @@ public class g extends Applet implements Runnable {
 			}
 			s=s+"}";
 			System.out.println(s);
-			System.out.println("start: "+startCell);
-			System.out.println("end: "+endCell);
+			System.out.println("start: "+starts[currentLevel]);
+			System.out.println("end: "+ends[currentLevel]);
 			break;
 //		case Event.UP:
 //			if (!moving) step = true;
@@ -647,10 +651,10 @@ public class g extends Applet implements Runnable {
 							levels[currentLevel][i] = selClr;
 						}
 						if (e.getButton() == MouseEvent.BUTTON2){//start
-							startCell=i;
+							starts[currentLevel]=i;
 						}
 						if (e.getButton() == MouseEvent.BUTTON3){//end
-							endCell=i;
+							ends[currentLevel]=i;
 						}
 					}
 				}
