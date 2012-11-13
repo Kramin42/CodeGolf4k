@@ -37,6 +37,7 @@ public class g extends Applet implements Runnable {
 	public void start() {
 		new Thread(this).start();
 	}
+	//static final int w = 800, h = 600;
 
 	int mx, my;
 	int mDownBox;//positive for toploop, negative for bottom (offset by + or - 1)
@@ -45,20 +46,21 @@ public class g extends Applet implements Runnable {
 	
 	int x,y,temp;
 	
-	int numOfCells = 20;
-	int cellWidth = 20;
+	static final int numOfCells = 20;
+	static final int cellWidth = 20;
 	
-	int prgBoxSize = 30;
-	int prgBoxSpacing = 40;
-	int prgBoxSideClickWidth = 10;
-	int numOfPrgBoxes = 25;
-	int prgBoxArrayWidth = 5;
+	static final int prgBoxSize = 30;
+	static final int prgBoxSpacing = 40;
+	static final int prgBoxSideClickWidth = 10;
+	static final int numOfPrgBoxes = 25;
+	static final int prgBoxArrayWidth = 5;
 	
-	int playBtnSpacing = 20;
-	int playBtnSize = 40;
+	static final int playBtnSpacing = 20;
+	static final int playBtnSize = 40;
+	
 	int playMode = 0;//0: paused, 1: single step, 2: play, 3: fast forward
 	
-	boolean editMode = false;
+	boolean editMode;
 	
 	int selClr = 0;
 	int selOp = 0;
@@ -71,34 +73,35 @@ public class g extends Applet implements Runnable {
 			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,4,3,3,2,4,0,0,3,0,0,0,0,0,0,0,0,3,0,4,0,0,4,3,2,3,3,3,2,3,3,3,4,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,4,3,2,3,2,3,3,4,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,4,0,4,3,3,3,2,4,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,4,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
 			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,3,3,3,3,3,3,3,3,3,2,3,3,3,2,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,2,3,3,3,3,3,3,2,3,3,3,2,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0,0,3,0,0,0,4,0,0,3,0,4,3,2,3,4,0,4,0,0,0,0,3,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,2,3,3,3,2,0,3,2,0,4,3,3,2,3,3,3,4,0,0,0,0,0,0,0,4,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,3,3,2,3,3,3,3,2,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
 	};
-	int numsOfButtons[] = {0,0,24,16};
-	int pars[] = {2,3,3,10};
-	int scores[] = {0,0,0,0};
-	int starts[] = {253,289,63,208};
-	int ends[] = {189,109,63,208};
-	int numOfLevels = 4;
+	//static final int numsOfButtons[] = {0,0,24,16};
+	//static final int pars[] = {2,3,3,10};
+	//int scores[] = {0,0,0,0};
+	static final int starts[] = {253,289,63,208};
+	static final int ends[] = {189,109,63,208};
+	static final int numOfLevels = 4;
 	int currentLevel = 0;
-	int pressedButtons = 0;
-	boolean endOpen = false;
+	//int pressedButtons = 0;
+	//boolean endOpen = false;
 	
 	//int startCell;
 	//int endCell;
-	int startDirs[][]={{0,-1},{0,-1},{0,-1},{1,0}};
-	double pos[]={0,0}, vel[]={0,0};
-	int dir[]={0,-1};
+	//static final int startDirs[][]={{0,-1},{0,-1},{0,-1},{1,0}};
+//	double pos[]={0,0}, vel[]={0,0};
+//	int dir[]={0,-1};
 	
-	int ballSpeed = 1;//5 for fastforward, 1 for normal
-	int fastFwrdMult = 5;
-	boolean moving = false;
+	static final int ballSpeed = 1;//5 for fastforward, 1 for normal
+	static final int fastFwrdMult = 5;
+	static final int bRad = 6;
+	//boolean moving;
 	
-	boolean step = false;
+	//boolean step;
 //	boolean play = false;
 //	boolean fastfwrd = false;
 	
-	boolean reachedEnd = false;
-	boolean outOfBounds = false;
-	boolean reset = false;
-	boolean createNewGame;
+//	boolean reachedEnd;
+//	boolean outOfBounds;
+	boolean reset;
+//	boolean createNewGame;
 	
 	// 0: nop, 1: return, 2: forward, 3: left, 4: right
 	int programs[][]  = new int[numOfLevels][numOfPrgBoxes];
@@ -112,9 +115,21 @@ public class g extends Applet implements Runnable {
 	int botloops[][] = new int[numOfLevels][numOfPrgBoxes];
 	int tplpclrs[][] = new int[numOfLevels][numOfPrgBoxes];
 	int btlpclrs[][] = new int[numOfLevels][numOfPrgBoxes];
-	int bezierOffset = 40;
-	int progPos;
-	boolean execute;
+	static final int bezierOffset = 40;
+	//int progPos;
+	//boolean execute;
+	
+//	//Colours
+//	static final Color clrBG = Color.black;
+//	static final Color clrLines = Color.darkGray;
+//	//Color clrDimRed = new Color(0x80FF0000,true);
+//	//Color clrDimGreen = new Color(0x8000FF00,true);
+//	//Color clrDimBlue = new Color(0x800000FF,true);
+//	static final Color clrSel = Color.yellow;
+//	static final Color clrText = Color.white;
+//	static final Color clrBall = Color.white;
+//	
+//	static final Color clrLevel[] = {Color.gray, new Color(96,0,0), new Color(0,96,0), new Color(0,0,128)};
 
 	public void run() {
 		int w = 800, h = 600;
@@ -124,16 +139,6 @@ public class g extends Applet implements Runnable {
 		BufferedImage screen = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = (Graphics2D) screen.getGraphics();
 		Graphics2D appletGraphics = (Graphics2D) getGraphics();
-		
-		AffineTransform identity = new AffineTransform();
-		AffineTransform tempTrans = new AffineTransform();
-		
-		BasicStroke thinStroke = new BasicStroke(1);
-		BasicStroke medStroke = new BasicStroke(2);
-		
-		int xpoints[] = {-5,0,5};
-		int ypoints[] = {0,-10,0};
-		Polygon triangle = new Polygon(xpoints, ypoints, 3);
 		
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -145,37 +150,53 @@ public class g extends Applet implements Runnable {
 		g.drawLine(6, 0, 6, 12);
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursor , new Point(6,6), ""));
 		
+		//AffineTransform tempTrans = new AffineTransform();
+		
 		enableEvents(MouseEvent.MOUSE_EVENT_MASK | MouseEvent.MOUSE_MOTION_EVENT_MASK | KeyEvent.KEY_EVENT_MASK);
 		
-		Random rand = new Random();
+		//Random rand = new Random();
 
 		//ball vars
 		double dest[] = {0,0};
 		int currentCell = 0;
 		
 		// other vars
+		int scores[] = {0,0,0,0};
 		
-		FontMetrics fm;
-		Rectangle2D rect;
+		//FontMetrics fm;
+		//Rectangle2D rect;
+		
+		AffineTransform identity = new AffineTransform();
+		
+		BasicStroke thinStroke = new BasicStroke(1);
+		BasicStroke medStroke = new BasicStroke(2);
+		
+		int xpoints[] = {-5,0,5};
+		int ypoints[] = {0,-10,0};
+		Polygon triangle = new Polygon(xpoints, ypoints, 3);
+		
+		//Font normalFont = new Font("SansSerif", Font.PLAIN, 16);
 		
 		
 		// constants
-		int bRad = 6;
-
+		int startDirs[][]={{0,-1},{0,-1},{0,-1},{1,0}};
+		int pars[] = {2,3,3,10};
+		int numsOfButtons[] = {0,0,24,16};
+		
 		// fonts
-		Font normalFont = new Font("SansSerif", Font.PLAIN, 16);
+		//Font normalFont = new Font("SansSerif", Font.PLAIN, 16);
 		//Font largeFont = new Font("SansSerif", Font.PLAIN, 60);
 		//Font mediumFont = new Font("SansSerif", Font.PLAIN, 30);
 		//Font hugeFont = new Font("SansSerif", Font.PLAIN, 120);
 		
-		g2d.setFont(normalFont);
+		g2d.setFont(new Font("SansSerif", Font.PLAIN, 16));
 		
 		//Colours
 		Color clrBG = Color.black;
 		Color clrLines = Color.darkGray;
-		Color clrDimRed = new Color(0x80FF0000,true);
-		Color clrDimGreen = new Color(0x8000FF00,true);
-		Color clrDimBlue = new Color(0x800000FF,true);
+		//Color clrDimRed = new Color(0x80FF0000,true);
+		//Color clrDimGreen = new Color(0x8000FF00,true);
+		//Color clrDimBlue = new Color(0x800000FF,true);
 		Color clrSel = Color.yellow;
 		Color clrText = Color.white;
 		Color clrBall = Color.white;
@@ -183,11 +204,24 @@ public class g extends Applet implements Runnable {
 		Color clrLevel[] = {Color.gray, new Color(96,0,0), new Color(0,96,0), new Color(0,0,128)};
 
 		// Some variables to use for the fps.
-		int tick = 0, fps = 0, acc = 0;
+		int /*tick = 0, fps = 0,*/ acc = 0;
 		long lastTime = System.nanoTime();
 		
 		int frameNum = 0;
 		int stepDelay = 0;
+		int pressedButtons = 0;
+		boolean endOpen = false;
+		double pos[]={0,0}, vel[]={0,0};
+		int dir[]={0,-1};
+		boolean moving=false;
+		boolean step=false;
+		
+		boolean reachedEnd=false;
+		boolean outOfBounds;
+		boolean createNewGame;
+		
+		int progPos=0;
+		//boolean execute;
 		
 		//build level p=path h=hidden
 		// 0: blank, 1: pred, 2: pgreen, 3: pblue, 4: hpred, 5: hpgreen, 6: hpblue
@@ -203,18 +237,15 @@ public class g extends Applet implements Runnable {
 //		endCell   = 0*numOfCells+0;
 		
 		createNewGame = true;
-		
-		
-
 		// Game loop.
 		while (true) {
 			long now = System.nanoTime();
 			acc += now - lastTime;
-			tick++;
+			//tick++;
 			if (acc >= 1000000000L) {
 				acc -= 1000000000L;
-				fps = tick;
-				tick = 0;
+				//fps = tick;
+				//tick = 0;
 			}
 			//
 			//game update
@@ -244,7 +275,7 @@ public class g extends Applet implements Runnable {
 				outOfBounds = false;
 				reset = false;
 				createNewGame=false;
-				execute=false;
+				//execute=false;
 				playMode=0;
 				pressedButtons = 0;
 				endOpen = false;
@@ -389,9 +420,9 @@ public class g extends Applet implements Runnable {
 			g2d.fillRect(0, 0, w, h);
 			
 			
-			g2d.setColor(clrText);
-			g2d.setFont(normalFont);
-			g2d.drawString("FPS " + String.valueOf(fps), 10, h-10);
+			//g2d.setColor(clrText);
+			//g2d.setFont(normalFont);
+			//g2d.drawString("FPS " + String.valueOf(fps), 10, h-10);
 			
 			//draw the ball area
 			//draw the grid
@@ -456,7 +487,7 @@ public class g extends Applet implements Runnable {
 					g2d.drawRect(0, -prgBoxSideClickWidth, prgBoxSize, prgBoxSideClickWidth);
 				if (mx>x && mx<x+prgBoxSize && my>y+prgBoxSize && my<y+prgBoxSize+prgBoxSideClickWidth)
 					g2d.drawRect(0, prgBoxSize, prgBoxSize, prgBoxSideClickWidth);
-				tempTrans = g2d.getTransform();
+				//tempTrans = g2d.getTransform();
 				g2d.translate(prgBoxSize/2, prgBoxSize/2);
 				// 0: nop, 1: return, 2: forward, 3: left, 4: right
 				if (programs[currentLevel][i]==3){
