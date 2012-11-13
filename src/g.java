@@ -58,7 +58,7 @@ public class g extends Applet implements Runnable {
 	int playBtnSize = 40;
 	int playMode = 0;//0: paused, 1: single step, 2: play, 3: fast forward
 	
-	boolean editMode = true;
+	boolean editMode = false;
 	
 	int selClr = 0;
 	int selOp = 0;
@@ -68,18 +68,22 @@ public class g extends Applet implements Runnable {
 	//int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,3,3,2,1,0,0,3,0,0,0,0,0,0,0,0,3,0,1,0,0,1,3,2,3,3,3,2,3,3,3,1,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,1,3,2,3,2,3,3,1,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,1,0,1,3,3,3,2,1,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,1,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
 	int levels[][] = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
 			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,3,3,2,1,0,0,3,0,0,0,0,0,0,0,0,3,0,1,0,0,1,3,2,3,3,3,2,3,3,3,1,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,1,3,2,3,2,3,3,1,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,1,0,1,3,3,3,2,1,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,1,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,4,3,3,2,4,0,0,3,0,0,0,0,0,0,0,0,3,0,4,0,0,4,3,2,3,3,3,2,3,3,3,4,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,4,3,2,3,2,3,3,4,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,4,0,4,3,3,3,2,4,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,4,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,3,3,3,3,3,3,3,3,3,2,3,3,3,2,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,2,3,3,3,3,3,3,2,3,3,3,2,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0,0,3,0,0,0,4,0,0,3,0,4,3,2,3,4,0,4,0,0,0,0,3,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,2,3,3,3,2,0,3,2,0,4,3,3,2,3,3,3,4,0,0,0,0,0,0,0,4,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,3,3,2,3,3,3,3,2,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
 	};
-	int pars[] = {2,3,3};
-	int scores[] = {0,0,0};
-	int starts[] = {253,289,63};
-	int ends[] = {189,109,127};
-	int numOfLevels = 3;
+	int numsOfButtons[] = {0,0,24,16};
+	int pars[] = {2,3,3,10};
+	int scores[] = {0,0,0,0};
+	int starts[] = {253,289,63,208};
+	int ends[] = {189,109,63,208};
+	int numOfLevels = 4;
 	int currentLevel = 0;
+	int pressedButtons = 0;
+	boolean endOpen = false;
 	
 	//int startCell;
 	//int endCell;
-	int startDir[]={0,-1};
+	int startDirs[][]={{0,-1},{0,-1},{0,-1},{1,0}};
 	double pos[]={0,0}, vel[]={0,0};
 	int dir[]={0,-1};
 	
@@ -221,18 +225,18 @@ public class g extends Applet implements Runnable {
 					//if (++currentLevel>=numOfLevels) currentLevel=0;
 					scores[currentLevel]=0;
 					for (int i=0;i<numOfPrgBoxes;i++){
-						if (programs[currentLevel][i]!=0) scores[currentLevel]++;
+						if (programs[currentLevel][i]!=0 || toploops[currentLevel][i]!=0 || botloops[currentLevel][i]!=0) scores[currentLevel]++;
 					}
 				}
 				
-				startDir[0]=0; startDir[1]=-1; //0: up, 1: right, 2: down, 3: left
+				//startDir[0]=0; startDir[1]=-1; //0: up, 1: right, 2: down, 3: left
 				vel[0]=0;
 				vel[1]=0;
 				moving=false;
 				step=false;
 				pos[0] = (starts[currentLevel]%numOfCells)*cellWidth + cellWidth/2;
 				pos[1] = (starts[currentLevel]/numOfCells)*cellWidth + cellWidth/2;
-				dir[0] = startDir[0]; dir[1] = startDir[1];
+				dir[0] = startDirs[currentLevel][0]; dir[1] = startDirs[currentLevel][1];
 				currentCell = starts[currentLevel];
 				progPos = 0;
 				progStack.clear();
@@ -242,7 +246,15 @@ public class g extends Applet implements Runnable {
 				createNewGame=false;
 				execute=false;
 				playMode=0;
+				pressedButtons = 0;
+				endOpen = false;
+				for (int i=0; i<numOfCells*numOfCells;i++){
+					if (levels[currentLevel][i]>6) levels[currentLevel][i]-=3;
+				}
 			}
+			
+			//update whether the end is open
+			endOpen = (pressedButtons == numsOfButtons[currentLevel]);
 			
 			frameNum++;
 			//if paused reset frameNum
@@ -289,9 +301,16 @@ public class g extends Applet implements Runnable {
 
 					
 					//check if it has reached the end
-					reachedEnd = currentCell==ends[currentLevel];
-					outOfBounds = (levels[currentLevel][currentCell]==0 || levels[currentLevel][currentCell]>3);
+					if (endOpen) reachedEnd = currentCell==ends[currentLevel];
+					outOfBounds = (levels[currentLevel][currentCell]==0/* || levels[currentLevel][currentCell]>3*/);
 					reset = reachedEnd || outOfBounds;
+					
+					//check if it is on a button
+					if (levels[currentLevel][currentCell]>3 && levels[currentLevel][currentCell]<=6){
+						levels[currentLevel][currentCell]+=3;
+						pressedButtons++;
+					}
+					
 //					if (currentCell==endCell){
 //						reachedEnd=true;
 //					} else if (level[currentCell]==0 || level[currentCell]>3){
@@ -305,7 +324,7 @@ public class g extends Applet implements Runnable {
 				//System.out.println("running: " + program[progPos] + " at " + progPos);
 				// 0: blank, 1: red, 2: green, 3: blue
 				//System.out.println("program position: "+progPos);
-				if (prgrmclrs[currentLevel][progPos] == 0 || prgrmclrs[currentLevel][progPos] == levels[currentLevel][currentCell]) {
+				if (prgrmclrs[currentLevel][progPos] == 0 || prgrmclrs[currentLevel][progPos] == ((levels[currentLevel][currentCell]-1)%3+1)) {
 					// 0: nop, 1: return, 2: forward, 3: left, 4: right
 					temp = dir[0];
 					if (programs[currentLevel][progPos] == 2)
@@ -335,10 +354,10 @@ public class g extends Applet implements Runnable {
 				if (temp!=-2){//did not just return
 					temp=-1;
 					//check for coloured branches first
-					if (tplpclrs[currentLevel][progPos] == levels[currentLevel][currentCell] && toploops[currentLevel][progPos]!=0){
+					if (tplpclrs[currentLevel][progPos] == ((levels[currentLevel][currentCell]-1)%3+1) && toploops[currentLevel][progPos]!=0){
 						temp=progPos;
 						progPos = Math.abs(toploops[currentLevel][progPos])-1;
-					} else if (btlpclrs[currentLevel][progPos] == levels[currentLevel][currentCell] && botloops[currentLevel][progPos]!=0){
+					} else if (btlpclrs[currentLevel][progPos] == ((levels[currentLevel][currentCell]-1)%3+1) && botloops[currentLevel][progPos]!=0){
 						temp=progPos;
 						progPos = Math.abs(botloops[currentLevel][progPos])-1;
 					} else if (tplpclrs[currentLevel][progPos]==0 && toploops[currentLevel][progPos]!=0){
@@ -381,18 +400,38 @@ public class g extends Applet implements Runnable {
 				g2d.drawLine(0, i*cellWidth, numOfCells*cellWidth, i*cellWidth);
 				g2d.drawLine(i*cellWidth, 0, i*cellWidth, numOfCells*cellWidth);
 			}
-			//draw the hole
-			g2d.setColor(clrLines);
-			g2d.fillRect((ends[currentLevel]%numOfCells)*cellWidth+1, (ends[currentLevel]/numOfCells)*cellWidth+1, cellWidth-1, cellWidth-1);
-			g2d.setColor(clrBG);
-			g2d.fillOval((ends[currentLevel]%numOfCells)*cellWidth+(cellWidth/2 - bRad), (ends[currentLevel]/numOfCells)*cellWidth+(cellWidth/2 - bRad), bRad*2+1, bRad*2+1);
 			//draw the coloured squares
 			for (int i=0; i<numOfCells*numOfCells;i++){
 				if (levels[currentLevel][i]>0){
-					g2d.setColor(clrLevel[levels[currentLevel][i]]);
+					g2d.setColor(clrLevel[((levels[currentLevel][i]-1)%3+1)]);
 					g2d.fillRect((i%numOfCells)*cellWidth+1, (i/numOfCells)*cellWidth+1, cellWidth-1, cellWidth-1);
+					if (levels[currentLevel][i]>6){//draw the pressed buttons
+						g2d.setColor(clrSel);
+						g2d.fillOval((i%numOfCells)*cellWidth+cellWidth/2-bRad, (i/numOfCells)*cellWidth+cellWidth/2-bRad, 2*bRad, 2*bRad);
+					}
+					else if (levels[currentLevel][i]>3){//draw the unpressed buttons
+						g2d.setColor(clrLines);
+						g2d.fillOval((i%numOfCells)*cellWidth+cellWidth/2-bRad, (i/numOfCells)*cellWidth+cellWidth/2-bRad, 2*bRad, 2*bRad);
+					}
 				}
 			}
+			//draw the hole
+			g2d.translate((ends[currentLevel]%numOfCells)*cellWidth, (ends[currentLevel]/numOfCells)*cellWidth);
+			g2d.setColor(clrLines);
+			if (levels[currentLevel][ends[currentLevel]] != 0) g2d.setColor(clrLevel[((levels[currentLevel][ends[currentLevel]]-1)%3+1)]);
+			g2d.fillRect(1, 1, cellWidth-1, cellWidth-1);
+			g2d.setColor(clrBG);
+			g2d.fillOval((cellWidth/2 - bRad), (cellWidth/2 - bRad), bRad*2+1, bRad*2+1);
+			//draw bars if locked
+			g2d.setColor(clrLines);
+			//if (levels[currentLevel][ends[currentLevel]] != 0) g2d.setColor(clrLevel[((levels[currentLevel][ends[currentLevel]]-1)%3+1)]);
+			if (!endOpen){
+				g2d.drawLine(0, bRad+1, cellWidth, bRad+1);
+				g2d.drawLine(0, cellWidth-bRad-1, cellWidth, cellWidth-bRad-1);
+				g2d.drawLine(bRad+1, 0, bRad+1, cellWidth);
+				g2d.drawLine(cellWidth-bRad-1, 0, cellWidth-bRad-1, cellWidth);
+			}
+			g2d.setTransform(identity);
 			
 			//draw the ball
 			g2d.setColor(clrBall);
@@ -615,6 +654,17 @@ public class g extends Applet implements Runnable {
 			System.out.println(s);
 			System.out.println("start: "+starts[currentLevel]);
 			System.out.println("end: "+ends[currentLevel]);
+			break;
+		case KeyEvent.VK_B:
+			if (editMode){
+				for (int i=0; i<numOfCells*numOfCells;i++){
+					x = (i%numOfCells)*cellWidth;
+					y = (i/numOfCells)*cellWidth;
+					if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
+						if (selClr!=0) levels[currentLevel][i] = selClr+3;
+					}
+				}
+			}
 			break;
 //		case Event.UP:
 //			if (!moving) step = true;
