@@ -17,19 +17,16 @@ import java.awt.BasicStroke;
 //import java.awt.Event;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
+//import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Random;
 import java.util.Stack;
 
 public class g extends Applet implements Runnable {
@@ -43,8 +40,6 @@ public class g extends Applet implements Runnable {
 	int mDownBox;//positive for toploop, negative for bottom (offset by + or - 1)
 	boolean dragging =false;
 	boolean mousedown = false;
-	
-	int x,y,temp;
 	
 	static final int numOfCells = 20;
 	static final int cellWidth = 20;
@@ -60,25 +55,53 @@ public class g extends Applet implements Runnable {
 	
 	int playMode = 0;//0: paused, 1: single step, 2: play, 3: fast forward
 	
-	boolean editMode;
+	boolean editMode=true;
 	
 	int selClr = 0;
 	int selOp = 0;
 	
-	//int level[] = new int[numOfCells*numOfCells];
-	//int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,3,1,0,0,0,0,3,3,3,1,0,1,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,1,3,3,2,0,1,3,3,1,0,0,2,3,3,3,3,2,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,1,2,3,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
-	//int level[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,3,3,2,1,0,0,3,0,0,0,0,0,0,0,0,3,0,1,0,0,1,3,2,3,3,3,2,3,3,3,1,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,1,3,2,3,2,3,3,1,0,1,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,1,0,1,3,3,3,2,1,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,1,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
-	int levels[][] = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,4,3,3,2,4,0,0,3,0,0,0,0,0,0,0,0,3,0,4,0,0,4,3,2,3,3,3,2,3,3,3,4,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,4,3,2,3,2,3,3,4,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,4,0,4,3,3,3,2,4,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,4,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
-			{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,3,3,3,3,3,3,3,3,3,2,3,3,3,2,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,2,3,3,3,3,3,3,2,3,3,3,2,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0,0,3,0,0,0,4,0,0,3,0,4,3,2,3,4,0,4,0,0,0,0,3,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,2,3,3,3,2,0,3,2,0,4,3,3,2,3,3,3,4,0,0,0,0,0,0,0,4,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,3,3,2,3,3,3,3,2,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	static final int numOfLevels = 10;
+	
+	int levels[][] = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,3,3,3,3,3,3,2,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,4,3,3,2,4,0,0,3,0,0,0,0,0,0,0,0,3,0,4,0,0,4,3,2,3,3,3,2,3,3,3,4,0,0,0,0,3,0,3,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,4,3,2,3,2,3,3,4,0,4,0,0,0,3,0,0,0,0,0,0,0,0,3,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,3,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,4,0,4,3,3,3,2,4,0,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,4,3,2,3,3,2,3,3,3,3,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,2,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,2,2,3,2,2,3,3,3,0,0,0,0,0,2,0,0,0,0,0,0,0,0,3,0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,3,2,2,3,3,3,3,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,3,0,0,3,3,3,3,2,3,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,2,0,0,0,2,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,0,0,0,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,2,3,2,2,0,0,2,2,2,3,3,3,3,3,3,2,0,0,0,0,2,3,3,2,2,2,2,3,3,3,2,2,2,2,3,2,0,0,0,0,0,2,3,3,3,3,3,3,2,2,2,2,2,2,3,2,0,0,0,0,0,0,2,2,2,2,2,2,0,0,2,6,3,3,3,2,0,0,0,0,0,0,0,0,0,2,2,2,0,0,2,2,2,2,3,2,0,0,0,0,0,0,0,0,2,3,3,3,2,0,0,0,0,2,3,2,0,0,0,0,0,0,0,0,2,3,2,3,3,2,2,2,2,3,3,2,0,0,0,0,0,0,0,0,2,3,2,2,3,3,3,3,3,3,2,0,0,0,0,0,0,0,0,0,2,3,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,2,3,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,3,3,3,2,3,3,3,0,0,0,3,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,3,0,0,0,3,0,0,0,3,0,3,0,0,0,3,0,0,0,0,0,2,0,0,0,2,0,0,0,3,2,3,0,0,0,3,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,0,3,3,3,3,3,2,3,3,3,3,3,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,3,3,2,0,0,0,0,0,2,3,3,3,3,3,2,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,2,3,3,2,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,3,3,3,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,3,3,3,3,3,3,3,3,3,2,3,3,3,2,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,2,3,3,3,3,3,3,2,3,3,3,2,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,3,0,0,0,3,0,0,0,3,0,0,0,0,3,0,0,0,4,0,0,3,0,4,3,2,3,4,0,4,0,0,0,0,3,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,0,0,4,2,3,3,3,2,0,3,2,0,4,3,3,2,3,3,3,4,0,0,0,0,0,0,0,4,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,4,0,0,0,0,0,3,0,0,0,0,3,0,0,0,0,0,0,0,0,2,3,3,3,3,3,2,3,3,3,3,2,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,4,3,2,3,3,3,3,4,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	,{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,3,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,3,0,0,0,3,3,0,0,0,3,0,0,3,3,0,3,0,3,3,3,0,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,3,3,0,3,3,0,0,3,0,3,3,0,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,2,1,1,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,3,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,2,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,3,0,2,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,3,0,3,3,3,3,1,2,2,3,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,}
+	};
+	//int levels[][] = new int[numOfLevels][numOfCells*numOfCells];
+	//static final int levelData[][] = {{190,-3,-3,-3,-2,19,-3,19,-3,19,-3},{129,-3,19,-3,19,-2,-3,-3,-1,19,-3,19,-3,16,-2,-3,-3,-1,16,-3,19,-3,19,-3},{23,-4,10,-4,8,-3,10,-3,6,-4,-3,-2,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-2,-3,-3,-4,5,-3,10,-3,8,-3,6,-4,3,-3,8,-3,3,-4,-3,-3,-2,-4,2,-3,8,-3,1,-4,2,-4,-3,-2,-3,-3,-3,-2,-3,-3,-3,-4,4,-3,1,-3,4,-3,3,-3,6,-4,-3,-2,-3,-2,-3,-3,-4,1,-4,3,-3,8,-3,1,-3,8,-4,8,-3,1,-4,6,-4,10,-3,8,-3,10,-3,2,-4,1,-4,-3,-3,-3,-2,-4,9,-3,2,-3,5,-3,8,-4,-3,-2,-3,-3,-2,-3,-3,-3,-3,-3,-2,-3,-3,-3,-3,-4,5,-3,2,-3,5,-3,10,-4,2,-4,5,-3,19,-4},{86,-3,-2,-3,-3,-3,-3,-3,13,-3,5,-2,13,-3,5,-3,19,-3,10,-3,-3,-3,-3,-3,-3,-3,-2,-2,-3,-2,-2,-3,-3,-3,5,-2,8,-3,4,-2,5,-2,8,-3,4,-3,5,-3,8,-3,4,-3,5,-3,-2,-2,-3,-3,-3,-3,2,-3,4,-3,11,-2,2,-2,4,-3,11,-3,2,-3,-3,-3,-3,-2,-3,11,-3,19,-3,19,-3},{49,-3,19,-3,19,-3,19,-3,19,-3,19,-3,19,-3,19,-2,19,-3,19,-3,19,-3,19,-3,19,-3,19,-3,19,-3},{29,-2,-2,-2,-2,-2,-2,-2,-2,-2,4,-2,-2,-2,-2,-2,-2,-2,-3,-3,-3,-3,-3,-3,-3,-3,-2,3,-2,-3,-3,-3,-3,-3,-3,-3,-3,-2,-2,-2,-2,-2,-2,-2,-2,3,-2,-3,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,5,-2,-3,-2,-2,2,-2,-2,-2,-3,-3,-3,-3,-3,-3,-2,4,-2,-3,-3,-2,-2,-2,-2,-3,-3,-3,-2,-2,-2,-2,-3,-2,5,-2,-3,-3,-3,-3,-3,-3,-2,-2,-2,-2,-2,-2,-3,-2,6,-2,-2,-2,-2,-2,-2,2,-2,-6,-3,-3,-3,-2,9,-2,-2,-2,2,-2,-2,-2,-2,-3,-2,8,-2,-3,-3,-3,-2,4,-2,-3,-2,8,-2,-3,-2,-3,-3,-2,-2,-2,-2,-3,-3,-2,8,-2,-3,-2,-2,-3,-3,-3,-3,-3,-3,-2,9,-2,-3,-2,-2,-2,-2,-2,-2,-2,-2,10,-2,-3,-2,-2,16,-2,-3,-2,-2,16,-2,-3,-2,17,-2,-2,-2},{41,-3,-3,-3,-3,-3,-3,-3,-2,-3,-3,-3,-3,-3,-3,-3,5,-3,13,-3,5,-3,13,-3,5,-3,13,-3,5,-3,3,-3,-3,-3,-2,-3,-3,-3,3,-3,5,-3,3,-3,5,-3,3,-3,5,-3,3,-3,5,-2,3,-2,5,-3,3,-3,3,-3,1,-3,3,-3,5,-2,3,-2,3,-3,-2,-3,3,-3,5,-3,3,-3,9,-3,5,-3,3,-3,9,-3,5,-3,3,-3,9,-3,5,-3,3,-3,-3,-3,-3,-3,-2,-3,-3,-3,-3,-3,5,-3,19,-3,19,-3,19,-3},{55,-2,19,-3,19,-3,19,-3,14,-2,-3,-3,-3,-3,-2,5,-2,-3,-3,-3,-3,-3,-2,2,-3,10,-3,5,-3,2,-3,10,-3,5,-3,2,-3,10,-3,5,-2,-3,-3,-2,10,-3,19,-3,19,-2,-3,-3,-3,-3,-3,-3,-3,-2,19,-3,19,-3,19,-3,19,-3,19,-2},{23,-4,13,-4,5,-2,-3,-3,-3,-3,-3,-3,-3,-3,-3,-2,-3,-3,-3,-2,5,-3,9,-3,3,-3,5,-4,9,-3,3,-3,4,-4,10,-3,3,-3,4,-2,-3,-3,-3,-3,-3,-3,-2,-3,-3,-3,-2,3,-3,4,-3,6,-3,3,-3,3,-3,4,-3,3,-4,2,-3,1,-4,-3,-2,-3,-4,1,-4,4,-3,3,-3,2,-3,11,-4,-2,-3,-3,-3,-2,1,-3,-2,1,-4,-3,-3,-2,-3,-3,-3,-4,7,-4,2,-3,4,-3,8,-4,5,-3,4,-3,8,-2,-3,-3,-3,-3,-3,-2,-3,-3,-3,-3,-2,8,-3,10,-3,8,-3,10,-3,8,-3,10,-3,6,-4,-3,-2,-3,-3,-3,-3,-4,5,-3,19,-4},{20,-3,-3,2,-3,1,-3,13,-3,1,-3,3,-3,-3,3,-3,2,-3,-3,1,-3,1,-3,-3,-3,2,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,-3,-3,1,-3,-3,2,-3,1,-3,-3,2,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,1,-3,23,-3,-2,-1,-1,-3,-3,-3,-3,-3,-3,10,-3,8,-1,10,-3,1,-3,-2,5,-1,10,-3,1,-2,6,-2,10,-3,1,-2,6,-3,10,-3,1,-1,6,-3,10,-3,1,-3,-3,-3,-3,-1,-2,-2,-3,10,-1,19,-1,19,-1,19,-3}};
+	static final int starts[] = {253
+	,289
+	,63
+	,349
+	,329
+	,326
+	,361
+	,369
+	,208
+	,342
+	};
+	static final int ends[] = {189
+	,109
+	,63
+	,126
+	,50
+	,56
+	,189
+	,55
+	,208
+	,185
 	};
 	//static final int numsOfButtons[] = {0,0,24,16};
 	//static final int pars[] = {2,3,3,10};
 	//int scores[] = {0,0,0,0};
-	static final int starts[] = {253,289,63,208};
-	static final int ends[] = {189,109,63,208};
-	static final int numOfLevels = 4;
+	//static final int starts[] = {253,289,63,208};
+	//static final int ends[] = {189,109,63,208};
 	int currentLevel = 0;
 	//int pressedButtons = 0;
 	//boolean endOpen = false;
@@ -133,7 +156,29 @@ public class g extends Applet implements Runnable {
 
 	public void run() {
 		int w = 800, h = 600;
+		int x,y,temp=0;
 		setSize(w, h); // For AppletViewer, remove later.
+		
+		//extract levels from levelData
+//		for (int i=0; i<numOfLevels; i++){
+//			x=0;
+//			System.out.println("level: "+i);
+//			for (int j=0; j<levelData[i].length;j++){
+//				if (levelData[i][j]>0){
+//					System.out.println("x and levelData[i][j]:");
+//					System.out.println(x);
+//					System.out.println(levelData[i][j]);
+//					for (y=x; y<x+levelData[i][j];y++){//put zeroes in
+//						levels[i][y]=0;
+//					}
+//					x=y;
+//				} else {
+//					System.out.println("putting data at: "+x);
+//					levels[i][x]=-levelData[i][j];
+//					x++;
+//				}
+//			}
+//		}
 
 		// Set up the graphics stuff, double-buffering.
 		BufferedImage screen = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -152,7 +197,7 @@ public class g extends Applet implements Runnable {
 		
 		//AffineTransform tempTrans = new AffineTransform();
 		
-		enableEvents(MouseEvent.MOUSE_EVENT_MASK | MouseEvent.MOUSE_MOTION_EVENT_MASK | KeyEvent.KEY_EVENT_MASK);
+		enableEvents(MouseEvent.MOUSE_EVENT_MASK | MouseEvent.MOUSE_MOTION_EVENT_MASK/* | KeyEvent.KEY_EVENT_MASK*/);
 		
 		//Random rand = new Random();
 
@@ -161,7 +206,8 @@ public class g extends Applet implements Runnable {
 		int currentCell = 0;
 		
 		// other vars
-		int scores[] = {0,0,0,0};
+		int scores[] = new int[numOfLevels];
+		int side;
 		
 		//FontMetrics fm;
 		//Rectangle2D rect;
@@ -179,9 +225,38 @@ public class g extends Applet implements Runnable {
 		
 		
 		// constants
-		int startDirs[][]={{0,-1},{0,-1},{0,-1},{1,0}};
-		int pars[] = {2,3,3,10};
-		int numsOfButtons[] = {0,0,24,16};
+		int pars[] = {2
+				,3
+				,3
+				,5
+				,7
+				,4
+				,6
+				,7
+				,10
+				,18
+				};
+		int numsOfButtons[] = {0
+				,0
+				,24
+				,0
+				,0
+				,1
+				,0
+				,0
+				,16
+				,0
+				};
+		int startDirs[][]={{0,-1}
+				,{0,-1}
+				,{0,-1}
+				,{0,-1}
+				,{0,-1}
+				,{0,-1}
+				,{0,-1}
+				,{0,-1}
+				,{1,0}
+				,{0,-1}};
 		
 		// fonts
 		//Font normalFont = new Font("SansSerif", Font.PLAIN, 16);
@@ -255,8 +330,8 @@ public class g extends Applet implements Runnable {
 				if (reachedEnd){
 					//if (++currentLevel>=numOfLevels) currentLevel=0;
 					scores[currentLevel]=0;
-					for (int i=0;i<numOfPrgBoxes;i++){
-						if (programs[currentLevel][i]!=0 || toploops[currentLevel][i]!=0 || botloops[currentLevel][i]!=0) scores[currentLevel]++;
+					for (x=0;x<numOfPrgBoxes;x++){
+						if (programs[currentLevel][x]!=0 || toploops[currentLevel][x]!=0 || botloops[currentLevel][x]!=0) scores[currentLevel]++;
 					}
 				}
 				
@@ -279,8 +354,8 @@ public class g extends Applet implements Runnable {
 				playMode=0;
 				pressedButtons = 0;
 				endOpen = false;
-				for (int i=0; i<numOfCells*numOfCells;i++){
-					if (levels[currentLevel][i]>6) levels[currentLevel][i]-=3;
+				for (x=0; x<numOfCells*numOfCells;x++){
+					if (levels[currentLevel][x]>6) levels[currentLevel][x]-=3;
 				}
 			}
 			
@@ -427,22 +502,22 @@ public class g extends Applet implements Runnable {
 			//draw the ball area
 			//draw the grid
 			g2d.setColor(clrLines);
-			for (int i=0;i<=numOfCells;i++){
-				g2d.drawLine(0, i*cellWidth, numOfCells*cellWidth, i*cellWidth);
-				g2d.drawLine(i*cellWidth, 0, i*cellWidth, numOfCells*cellWidth);
+			for (x=0;x<=numOfCells;x++){
+				g2d.drawLine(0, x*cellWidth, numOfCells*cellWidth, x*cellWidth);
+				g2d.drawLine(x*cellWidth, 0, x*cellWidth, numOfCells*cellWidth);
 			}
 			//draw the coloured squares
-			for (int i=0; i<numOfCells*numOfCells;i++){
-				if (levels[currentLevel][i]>0){
-					g2d.setColor(clrLevel[((levels[currentLevel][i]-1)%3+1)]);
-					g2d.fillRect((i%numOfCells)*cellWidth+1, (i/numOfCells)*cellWidth+1, cellWidth-1, cellWidth-1);
-					if (levels[currentLevel][i]>6){//draw the pressed buttons
+			for (x=0; x<numOfCells*numOfCells;x++){
+				if (levels[currentLevel][x]>0){
+					g2d.setColor(clrLevel[((levels[currentLevel][x]-1)%3+1)]);
+					g2d.fillRect((x%numOfCells)*cellWidth+1, (x/numOfCells)*cellWidth+1, cellWidth-1, cellWidth-1);
+					if (levels[currentLevel][x]>6){//draw the pressed buttons
 						g2d.setColor(clrSel);
-						g2d.fillOval((i%numOfCells)*cellWidth+cellWidth/2-bRad, (i/numOfCells)*cellWidth+cellWidth/2-bRad, 2*bRad, 2*bRad);
+						g2d.fillOval((x%numOfCells)*cellWidth+cellWidth/2-bRad, (x/numOfCells)*cellWidth+cellWidth/2-bRad, bRad*2+1, bRad*2+1);
 					}
-					else if (levels[currentLevel][i]>3){//draw the unpressed buttons
+					else if (levels[currentLevel][x]>3){//draw the unpressed buttons
 						g2d.setColor(clrLines);
-						g2d.fillOval((i%numOfCells)*cellWidth+cellWidth/2-bRad, (i/numOfCells)*cellWidth+cellWidth/2-bRad, 2*bRad, 2*bRad);
+						g2d.fillOval((x%numOfCells)*cellWidth+cellWidth/2-bRad, (x/numOfCells)*cellWidth+cellWidth/2-bRad, bRad*2+1, bRad*2+1);
 					}
 				}
 			}
@@ -471,15 +546,15 @@ public class g extends Applet implements Runnable {
 			g2d.drawLine((int)(pos[0]-dir[1]*bRad), (int)(pos[1]+dir[0]*bRad), (int)(pos[0]+dir[0]*cellWidth/2), (int)(pos[1]+dir[1]*cellWidth/2));
 			
 			//draw the program
-			for (int i=0; i<numOfPrgBoxes; i++){
-				x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
-				y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
+			for (temp=0; temp<numOfPrgBoxes; temp++){
+				x=((temp%prgBoxArrayWidth)+1)*prgBoxSpacing+(temp%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+				y=((temp/prgBoxArrayWidth)+1)*prgBoxSpacing+(temp/prgBoxArrayWidth)*prgBoxSize;
 				g2d.translate(x, y);
-				if (prgrmclrs[currentLevel][i]>0){// 0: blank, 1: red, 2: green, 3: blue
-					g2d.setColor(clrLevel[prgrmclrs[currentLevel][i]]);
+				if (prgrmclrs[currentLevel][temp]>0){// 0: blank, 1: red, 2: green, 3: blue
+					g2d.setColor(clrLevel[prgrmclrs[currentLevel][temp]]);
 					g2d.fillRect(0, 0, prgBoxSize, prgBoxSize);
 				}
-				if (progPos == i) g2d.setColor(clrSel);
+				if (progPos == temp) g2d.setColor(clrSel);
 				else g2d.setColor(clrLines);
 				g2d.drawRect(0, 0, prgBoxSize, prgBoxSize);
 				//if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y+prgBoxSize+prgBoxSideClickWidth) g2d.drawRect(0, -prgBoxSideClickWidth, prgBoxSize, prgBoxSize+2*prgBoxSideClickWidth);
@@ -490,15 +565,16 @@ public class g extends Applet implements Runnable {
 				//tempTrans = g2d.getTransform();
 				g2d.translate(prgBoxSize/2, prgBoxSize/2);
 				// 0: nop, 1: return, 2: forward, 3: left, 4: right
-				if (programs[currentLevel][i]==3){
+				//System.out.println(temp);
+				if (programs[currentLevel][temp]==3){
 					g2d.rotate(-1.570796327);// -pi/2
-				} else if (programs[currentLevel][i]==4){
+				} else if (programs[currentLevel][temp]==4){
 					g2d.rotate(1.570796327); //  pi/2
 				}
-				if (programs[currentLevel][i]>1){
+				if (programs[currentLevel][temp]>1){
 					g2d.fill(triangle);
 				}
-				if (programs[currentLevel][i]==1){
+				if (programs[currentLevel][temp]==1){
 					g2d.drawString("R", -4, 4);
 				}
 				
@@ -506,43 +582,43 @@ public class g extends Applet implements Runnable {
 			}
 			
 			//draw beziers
-			for (int i=0; i<numOfPrgBoxes; i++){
-				g2d.translate(((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2, ((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize);
+			for (x=0; x<numOfPrgBoxes; x++){
+				g2d.translate(((x%prgBoxArrayWidth)+1)*prgBoxSpacing+(x%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2, ((x/prgBoxArrayWidth)+1)*prgBoxSpacing+(x/prgBoxArrayWidth)*prgBoxSize);
 				int ti;
 				int tx;
 				int ty;
-				int side=1;
+				side=1;
 				g2d.setStroke(medStroke);
-				if (toploops[currentLevel][i]!=0){
-					g2d.setColor(clrLevel[tplpclrs[currentLevel][i]]);
+				if (toploops[currentLevel][x]!=0){
+					g2d.setColor(clrLevel[tplpclrs[currentLevel][x]]);
 					g2d.scale(1, 0.5);
 					g2d.fill(triangle);
 					g2d.scale(1, 2);
-					ti=(Math.abs(toploops[currentLevel][i])-1);
-					tx=(ti%prgBoxArrayWidth-i%prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
-					ty=(ti/prgBoxArrayWidth-i/prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
-					if (toploops[currentLevel][i]<0){
+					ti=(Math.abs(toploops[currentLevel][x])-1);
+					tx=(ti%prgBoxArrayWidth-x%prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
+					ty=(ti/prgBoxArrayWidth-x/prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
+					if (toploops[currentLevel][x]<0){
 						side=-1;
 						ty+=prgBoxSize+2;
 					}
-					temp = bezierOffset*(1+Math.abs(ti/prgBoxArrayWidth-i/prgBoxArrayWidth));
+					temp = bezierOffset*(1+Math.abs(ti/prgBoxArrayWidth-x/prgBoxArrayWidth));
 					g2d.draw(new CubicCurve2D.Double(0, -2, 0, -temp, tx, ty-side*temp, tx, ty-1));
 				}
 				g2d.translate(0, prgBoxSize+1);
 				side=-1;
-				if (botloops[currentLevel][i]!=0){
-					g2d.setColor(clrLevel[btlpclrs[currentLevel][i]]);
+				if (botloops[currentLevel][x]!=0){
+					g2d.setColor(clrLevel[btlpclrs[currentLevel][x]]);
 					g2d.scale(1, -0.5);
 					g2d.fill(triangle);
 					g2d.scale(1, -2);
-					ti=(Math.abs(botloops[currentLevel][i])-1);
-					tx=(ti%prgBoxArrayWidth-i%prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
-					ty=(ti/prgBoxArrayWidth-i/prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
-					if (botloops[currentLevel][i]>0){
+					ti=(Math.abs(botloops[currentLevel][x])-1);
+					tx=(ti%prgBoxArrayWidth-x%prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
+					ty=(ti/prgBoxArrayWidth-x/prgBoxArrayWidth)*(prgBoxSpacing+prgBoxSize);
+					if (botloops[currentLevel][x]>0){
 						side=1;
 						ty-=prgBoxSize+2;
 					}
-					temp = bezierOffset*(1+Math.abs(ti/prgBoxArrayWidth-i/prgBoxArrayWidth));
+					temp = bezierOffset*(1+Math.abs(ti/prgBoxArrayWidth-x/prgBoxArrayWidth));
 					g2d.draw(new CubicCurve2D.Double(0, 1, 0, temp, tx, ty-side*temp, tx, ty));
 				}
 				g2d.setStroke(thinStroke);
@@ -553,11 +629,11 @@ public class g extends Applet implements Runnable {
 			if (dragging){
 				g2d.setStroke(medStroke);
 				g2d.setColor(clrLevel[selClr]);
-				int i = Math.abs(mDownBox)-1;
-				int side = 1;
+				temp = Math.abs(mDownBox)-1;
+				side = 1;
 				if (mDownBox<0) side = -1;
-				x = ((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2;
-				y = ((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize + (1-side)*prgBoxSize/2;
+				x = ((temp%prgBoxArrayWidth)+1)*prgBoxSpacing+(temp%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth+prgBoxSize/2;
+				y = ((temp/prgBoxArrayWidth)+1)*prgBoxSpacing+(temp/prgBoxArrayWidth)*prgBoxSize + (1-side)*prgBoxSize/2;
 				//temp = bezierOffset*(1+2*Math.abs(my-y)/(prgBoxSize+prgBoxSpacing));
 				g2d.draw(new CubicCurve2D.Double(x, y, x, y-side*bezierOffset*2, mx, my, mx, my));
 				g2d.setTransform(identity);
@@ -565,43 +641,43 @@ public class g extends Applet implements Runnable {
 			}
 			
 			//draw the play control buttons
-			for (int i=0; i<5; i++){
+			for (x=0; x<5; x++){
 				g2d.setColor(clrLines);
-				if (playMode+1==i) g2d.setColor(clrSel);
-				g2d.translate((i+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
+				if (playMode+1==x) g2d.setColor(clrSel);
+				g2d.translate((x+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
 				g2d.drawRect(0, 0, playBtnSize, playBtnSize);
 				g2d.translate(playBtnSize/2, playBtnSize/2);
 				g2d.setStroke(medStroke);
-				switch (i){
-				case 0://back to start
+				//switch (x){
+				if (x==0){//back to start
 					g2d.drawLine(-10, -5, -10, 4);
 					g2d.rotate(-1.570796327);
 					g2d.fill(triangle);
 					g2d.translate(0, 9);
 					g2d.fill(triangle);
-					break;
-				case 1://pause
+				}
+				if (x==1){//pause
 					g2d.drawLine(-5, -5, -5, 4);
 					g2d.drawLine(5, -5, 5, 4);
-					break;
-				case 2://single step
+				}
+				if (x==2){//single step
 					g2d.translate(-5, 0);
 					g2d.drawLine(10, -5, 10, 4);
 					g2d.rotate(1.570796327);
 					g2d.fill(triangle);
-					break;
-				case 3://play
+				}
+				if (x==3){//play
 					g2d.translate(-5, 0);
 					g2d.rotate(1.570796327);
 					g2d.fill(triangle);
-					break;
-				case 4://fast forward
+				}
+				if (x==4){//fast forward
 					g2d.rotate(1.570796327);
 					g2d.fill(triangle);
 					g2d.translate(0, 9);
 					g2d.fill(triangle);
-					break;
 				}
+				//}
 				g2d.setStroke(thinStroke);
 				g2d.setTransform(identity);
 			}
@@ -629,34 +705,35 @@ public class g extends Applet implements Runnable {
 			
 			//draw the colour palette
 			g2d.translate(prgBoxSpacing+numOfCells*cellWidth, numOfCells*cellWidth+playBtnSpacing);
-			for (int i=0;i<4;i++){
-				g2d.setColor(clrLevel[i]);
-				g2d.fillRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
+			for (x=0;x<4;x++){
+				g2d.setColor(clrLevel[x]);
+				g2d.fillRect((x%2)*cellWidth, (x/2)*cellWidth, cellWidth, cellWidth);
 				g2d.setColor(clrLines);
-				g2d.drawRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
+				g2d.drawRect((x%2)*cellWidth, (x/2)*cellWidth, cellWidth, cellWidth);
 			}
 			g2d.setColor(clrSel);
 			g2d.drawRect((selClr%2)*cellWidth, (selClr/2)*cellWidth, cellWidth, cellWidth);
 			g2d.setTransform(identity);
 			
 			//draw the operation selection buttons
-			for (int i=0;i<5;i++){// 0: nop, 1: return, 2: forward, 3: left, 4: right
-				x=2*prgBoxSpacing+i*(prgBoxSpacing-prgBoxSize)/2+(i+1)*prgBoxSize+numOfCells*cellWidth;
+			for (temp=0;temp<5;temp++){// 0: nop, 1: return, 2: forward, 3: left, 4: right
+				x=2*prgBoxSpacing+temp*(prgBoxSpacing-prgBoxSize)/2+(temp+1)*prgBoxSize+numOfCells*cellWidth;
 				y=numOfCells*cellWidth+playBtnSpacing + (cellWidth*2 - prgBoxSize)/2;
 				g2d.translate(x, y);
 				g2d.setColor(clrLines);
-				if (i==selOp) g2d.setColor(clrSel);
+				if (temp==selOp) g2d.setColor(clrSel);
 				g2d.drawRect(0, 0, prgBoxSize, prgBoxSize);
 				g2d.translate(prgBoxSize/2, prgBoxSize/2);
-				if (i==3){
+				if (temp==3){
 					g2d.rotate(-1.570796327);// -pi/2
-				} else if (i==4){
+				}
+				if (temp==4){
 					g2d.rotate(1.570796327); //  pi/2
 				}
-				if (i>1){
+				if (temp>1){
 					g2d.fill(triangle);
 				}
-				if (i==1){
+				if (temp==1){
 					g2d.drawString("R", -4, 4);
 				}
 				g2d.setTransform(identity);
@@ -674,84 +751,86 @@ public class g extends Applet implements Runnable {
 		}
 	}
 	
-	public void processKeyEvent(KeyEvent e) {
-		switch (e.getKeyCode()){
-		case KeyEvent.VK_S:
-			String s = "{";
-			for (int i=0; i<numOfCells*numOfCells;i++){
-				s=s+levels[currentLevel][i]+",";
-			}
-			s=s+"}";
-			System.out.println(s);
-			System.out.println("start: "+starts[currentLevel]);
-			System.out.println("end: "+ends[currentLevel]);
-			break;
-		case KeyEvent.VK_B:
-			if (editMode){
-				for (int i=0; i<numOfCells*numOfCells;i++){
-					x = (i%numOfCells)*cellWidth;
-					y = (i/numOfCells)*cellWidth;
-					if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
-						if (selClr!=0) levels[currentLevel][i] = selClr+3;
-					}
-				}
-			}
-			break;
-//		case Event.UP:
-//			if (!moving) step = true;
+//	public void processKeyEvent(KeyEvent e) {
+//		int x,y,temp;
+//		switch (e.getKeyCode()){
+//		case KeyEvent.VK_S:
+//			String s = "{";
+//			for (x=0; x<numOfCells*numOfCells;x++){
+//				s=s+levels[currentLevel][x]+",";
+//			}
+//			s=s+"}";
+//			System.out.println(s);
+//			System.out.println("start: "+starts[currentLevel]);
+//			System.out.println("end: "+ends[currentLevel]);
 //			break;
-//		case Event.LEFT:
-//			if (!moving){
-//				int temp=dir[0];
-//				dir[0]=dir[1];
-//				dir[1]=-temp;
+//		case KeyEvent.VK_B:
+//			if (editMode){
+//				for (temp=0; temp<numOfCells*numOfCells;temp++){
+//					x = (temp%numOfCells)*cellWidth;
+//					y = (temp/numOfCells)*cellWidth;
+//					if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
+//						if (selClr!=0) levels[currentLevel][temp] = selClr+3;
+//					}
+//				}
 //			}
 //			break;
-//		case Event.RIGHT:
-//			if (!moving){
-//				int temp=dir[0];
-//				dir[0]=-dir[1];
-//				dir[1]=temp;
-//			}
-//			break;
-		}
-	}
+////		case Event.UP:
+////			if (!moving) step = true;
+////			break;
+////		case Event.LEFT:
+////			if (!moving){
+////				int temp=dir[0];
+////				dir[0]=dir[1];
+////				dir[1]=-temp;
+////			}
+////			break;
+////		case Event.RIGHT:
+////			if (!moving){
+////				int temp=dir[0];
+////				dir[0]=-dir[1];
+////				dir[1]=temp;
+////			}
+////			break;
+//		}
+//	}
 	
 	public void processMouseEvent(MouseEvent e) {
+		int x,y,temp;
 		if (e.getID() == MouseEvent.MOUSE_PRESSED){
 			if (e.getButton() == MouseEvent.BUTTON1) mousedown=true;
 			mx = e.getX();
 			my = e.getY();
 			// in editmode check for clicks in the grid
-			if (editMode){
-				for (int i=0; i<numOfCells*numOfCells;i++){
-					x = (i%numOfCells)*cellWidth;
-					y = (i/numOfCells)*cellWidth;
-					if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
-						if (e.getButton() == MouseEvent.BUTTON1){
-							levels[currentLevel][i] = selClr;
-						}
-						if (e.getButton() == MouseEvent.BUTTON2){//start
-							starts[currentLevel]=i;
-						}
-						if (e.getButton() == MouseEvent.BUTTON3){//end
-							ends[currentLevel]=i;
-						}
-					}
-				}
-			}
+//			if (editMode){
+//				for (temp=0; temp<numOfCells*numOfCells;temp++){
+//					x = (temp%numOfCells)*cellWidth;
+//					y = (temp/numOfCells)*cellWidth;
+//					if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
+//						if (e.getButton() == MouseEvent.BUTTON1){
+//							levels[currentLevel][temp] = selClr;
+//						}
+//						if (e.getButton() == MouseEvent.BUTTON2){//start
+//							starts[currentLevel]=temp;
+//						}
+//						if (e.getButton() == MouseEvent.BUTTON3){//end
+//							ends[currentLevel]=temp;
+//						}
+//					}
+//				}
+//			}
 			
 			//System.out.println("mouse click at x="+e.x+", y="+e.y);
 			//check for clicks on the play control buttons
-			for (int i=0; i<5; i++){
+			for (temp=0; temp<5; temp++){
 				//g2d.translate((i+1)*(playBtnSpacing+playBtnSize), numOfCells*cellWidth+playBtnSpacing);
 				//g2d.drawRect(0, 0, playBtnSize, playBtnSize);
-				x = (i+1)*(playBtnSpacing+playBtnSize);
+				x = (temp+1)*(playBtnSpacing+playBtnSize);
 				y = numOfCells*cellWidth+playBtnSpacing;
 				//System.out.println("checking for button at x="+x+", y="+y);
 				if (mx>x && mx<x+playBtnSize && my>y && my<y+playBtnSize){
 					//System.out.println("playmode set to "+(i-1));
-					playMode = i-1;
+					playMode = temp-1;
 				}
 				if (playMode==-1){reset = true; playMode=0;}
 			}
@@ -770,11 +849,11 @@ public class g extends Applet implements Runnable {
 			}
 			
 			//g2d.translate(prgBoxSpacing+numOfCells*cellWidth, numOfCells*cellWidth+playBtnSpacing);
-			for (int i=0;i<4;i++){
-				x = prgBoxSpacing+numOfCells*cellWidth + (i%2)*cellWidth;
-				y = numOfCells*cellWidth+playBtnSpacing + (i/2)*cellWidth;
+			for (temp=0;temp<4;temp++){
+				x = prgBoxSpacing+numOfCells*cellWidth + (temp%2)*cellWidth;
+				y = numOfCells*cellWidth+playBtnSpacing + (temp/2)*cellWidth;
 				if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth ){
-					selClr=i;
+					selClr=temp;
 				}
 //				g2d.setColor(clrLevel[i]);
 //				g2d.fillRect((i%2)*cellWidth, (i/2)*cellWidth, cellWidth, cellWidth);
@@ -783,46 +862,46 @@ public class g extends Applet implements Runnable {
 			}
 			
 			//check the operation selection buttons
-			for (int i=0;i<5;i++){// 0: nop, 1: return, 2: forward, 3: left, 4: right
-				x=2*prgBoxSpacing+i*(prgBoxSpacing-prgBoxSize)/2+(i+1)*prgBoxSize+numOfCells*cellWidth;
+			for (temp=0;temp<5;temp++){// 0: nop, 1: return, 2: forward, 3: left, 4: right
+				x=2*prgBoxSpacing+temp*(prgBoxSpacing-prgBoxSize)/2+(temp+1)*prgBoxSize+numOfCells*cellWidth;
 				y=numOfCells*cellWidth+playBtnSpacing + (cellWidth*2 - prgBoxSize)/2;
 				if (mx>x && mx<x+prgBoxSize && my>y && my<y+prgBoxSize){
-					selOp=i;
+					selOp=temp;
 				}
 			}
 			
 			//check for clicks in the program boxes
-			for (int i=0; i<numOfPrgBoxes; i++){
-				x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
-				y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
+			for (temp=0; temp<numOfPrgBoxes; temp++){
+				x=((temp%prgBoxArrayWidth)+1)*prgBoxSpacing+(temp%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+				y=((temp/prgBoxArrayWidth)+1)*prgBoxSpacing+(temp/prgBoxArrayWidth)*prgBoxSize;
 				if (mx>x && mx<x+prgBoxSize && my>y && my<y+prgBoxSize){
 					if (e.getButton() == MouseEvent.BUTTON1){
-						if (selOp!=0) programs[currentLevel][i]=selOp;
-						prgrmclrs[currentLevel][i]=selClr;
+						if (selOp!=0) programs[currentLevel][temp]=selOp;
+						prgrmclrs[currentLevel][temp]=selClr;
 					} else {
-						programs[currentLevel][i]=0;
-						prgrmclrs[currentLevel][i]=0;
+						programs[currentLevel][temp]=0;
+						prgrmclrs[currentLevel][temp]=0;
 					}
 				}
 			}
 			
-			for (int i=0; i<numOfPrgBoxes; i++){
-				x=((i%prgBoxArrayWidth)+1)*prgBoxSpacing+(i%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
-				y=((i/prgBoxArrayWidth)+1)*prgBoxSpacing+(i/prgBoxArrayWidth)*prgBoxSize;
+			for (temp=0; temp<numOfPrgBoxes; temp++){
+				x=((temp%prgBoxArrayWidth)+1)*prgBoxSpacing+(temp%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
+				y=((temp/prgBoxArrayWidth)+1)*prgBoxSpacing+(temp/prgBoxArrayWidth)*prgBoxSize;
 				if (mx>x && mx<x+prgBoxSize && my>y-prgBoxSideClickWidth && my<y){
 					if (e.getButton() == MouseEvent.BUTTON1){
-						mDownBox=i+1;
+						mDownBox=temp+1;
 						dragging=true;
 					} else {
-						toploops[currentLevel][i]=0;
+						toploops[currentLevel][temp]=0;
 					}
 				}
 				if (mx>x && mx<x+prgBoxSize && my>y+prgBoxSize && my<y+prgBoxSize+prgBoxSideClickWidth){
 					if (e.getButton() == MouseEvent.BUTTON1){
-						mDownBox=-i-1;
+						mDownBox=-temp-1;
 						dragging=true;
 					} else {
-						botloops[currentLevel][i]=0;
+						botloops[currentLevel][temp]=0;
 					}
 				}
 			}
@@ -865,14 +944,15 @@ public class g extends Applet implements Runnable {
 		mx = e.getX();
 		my = e.getY();
 		// in editmode check for clicks in the grid
-		if (editMode && mousedown){
-			for (int i=0; i<numOfCells*numOfCells;i++){
-				x = (i%numOfCells)*cellWidth;
-				y = (i/numOfCells)*cellWidth;
-				if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
-					levels[currentLevel][i] = selClr;
-				}
-			}
-		}
+//		int x,y,temp;
+//		if (editMode && mousedown){
+//			for (temp=0; temp<numOfCells*numOfCells;temp++){
+//				x = (temp%numOfCells)*cellWidth;
+//				y = (temp/numOfCells)*cellWidth;
+//				if (mx>x && mx<x+cellWidth && my>y && my<y+cellWidth){
+//					levels[currentLevel][temp] = selClr;
+//				}
+//			}
+//		}
 	}
 }
