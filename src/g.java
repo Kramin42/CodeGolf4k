@@ -193,7 +193,7 @@ public class g extends Applet implements Runnable {
 		g.setColor(Color.cyan);
 		g.drawLine(0, 6, 12, 6);
 		g.drawLine(6, 0, 6, 12);
-		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursor , new Point(6,6), ""));
+		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursor , new Point(6,6), null));
 		
 		//AffineTransform tempTrans = new AffineTransform();
 		
@@ -264,7 +264,7 @@ public class g extends Applet implements Runnable {
 		//Font mediumFont = new Font("SansSerif", Font.PLAIN, 30);
 		//Font hugeFont = new Font("SansSerif", Font.PLAIN, 120);
 		
-		g2d.setFont(new Font("SansSerif", Font.PLAIN, 16));
+		g2d.setFont(new Font(null, Font.PLAIN, 16));
 		
 		//Colours
 		Color clrBG = Color.black;
@@ -286,8 +286,8 @@ public class g extends Applet implements Runnable {
 		int stepDelay = 0;
 		int pressedButtons = 0;
 		boolean endOpen = false;
-		double pos[]={0,0}, vel[]={0,0};
-		int dir[]={0,-1};
+		int pos[]=new int[2], vel[]=new int[2];
+		int dir[] = new int[2];
 		boolean moving=false;
 		boolean step=false;
 		
@@ -550,10 +550,10 @@ public class g extends Applet implements Runnable {
 				x=((temp%prgBoxArrayWidth)+1)*prgBoxSpacing+(temp%prgBoxArrayWidth)*prgBoxSize+numOfCells*cellWidth;
 				y=((temp/prgBoxArrayWidth)+1)*prgBoxSpacing+(temp/prgBoxArrayWidth)*prgBoxSize;
 				g2d.translate(x, y);
-				if (prgrmclrs[currentLevel][temp]>0){// 0: blank, 1: red, 2: green, 3: blue
-					g2d.setColor(clrLevel[prgrmclrs[currentLevel][temp]]);
-					g2d.fillRect(0, 0, prgBoxSize, prgBoxSize);
-				}
+//				if (prgrmclrs[currentLevel][temp]>0){// 0: blank, 1: red, 2: green, 3: blue
+//					g2d.setColor(clrLevel[prgrmclrs[currentLevel][temp]]);
+//					g2d.fillRect(0, 0, prgBoxSize, prgBoxSize);
+//				}
 				if (progPos == temp) g2d.setColor(clrSel);
 				else g2d.setColor(clrLines);
 				g2d.drawRect(0, 0, prgBoxSize, prgBoxSize);
@@ -564,18 +564,22 @@ public class g extends Applet implements Runnable {
 					g2d.drawRect(0, prgBoxSize, prgBoxSize, prgBoxSideClickWidth);
 				//tempTrans = g2d.getTransform();
 				g2d.translate(prgBoxSize/2, prgBoxSize/2);
+				g2d.setColor(clrLevel[prgrmclrs[currentLevel][temp]]);
 				// 0: nop, 1: return, 2: forward, 3: left, 4: right
 				//System.out.println(temp);
 				if (programs[currentLevel][temp]==3){
+					g2d.fillRect(5, 0, 2, 7);
 					g2d.rotate(-1.570796327);// -pi/2
 				} else if (programs[currentLevel][temp]==4){
+					g2d.fillRect(-7, 0, 2, 7);
 					g2d.rotate(1.570796327); //  pi/2
 				}
 				if (programs[currentLevel][temp]>1){
 					g2d.fill(triangle);
+					g2d.fillRect(-1, 0, 2, 7);
 				}
 				if (programs[currentLevel][temp]==1){
-					g2d.drawString("R", -4, 4);
+					g2d.drawString("R", -5, 5);
 				}
 				
 				g2d.setTransform(identity);
@@ -725,16 +729,19 @@ public class g extends Applet implements Runnable {
 				g2d.drawRect(0, 0, prgBoxSize, prgBoxSize);
 				g2d.translate(prgBoxSize/2, prgBoxSize/2);
 				if (temp==3){
+					g2d.fillRect(5, 0, 2, 7);
 					g2d.rotate(-1.570796327);// -pi/2
 				}
 				if (temp==4){
+					g2d.fillRect(-7, 0, 2, 7);
 					g2d.rotate(1.570796327); //  pi/2
 				}
 				if (temp>1){
 					g2d.fill(triangle);
+					g2d.fillRect(-1, 0, 2, 7);
 				}
 				if (temp==1){
-					g2d.drawString("R", -4, 4);
+					g2d.drawString("R", -5, 5);
 				}
 				g2d.setTransform(identity);
 			}
@@ -797,10 +804,10 @@ public class g extends Applet implements Runnable {
 	
 	public void processMouseEvent(MouseEvent e) {
 		int x,y,temp;
+		mx = e.getX();
+		my = e.getY();
 		if (e.getID() == MouseEvent.MOUSE_PRESSED){
 			if (e.getButton() == MouseEvent.BUTTON1) mousedown=true;
-			mx = e.getX();
-			my = e.getY();
 			// in editmode check for clicks in the grid
 //			if (editMode){
 //				for (temp=0; temp<numOfCells*numOfCells;temp++){
@@ -907,8 +914,6 @@ public class g extends Applet implements Runnable {
 			}
 		}
 		if (e.getID() == MouseEvent.MOUSE_RELEASED){
-			mx = e.getX();
-			my = e.getY();
 			if (e.getButton() == MouseEvent.BUTTON1) mousedown=false;
 			if (e.getButton() == MouseEvent.BUTTON1 && dragging){
 				for (int i=0; i<numOfPrgBoxes; i++){
